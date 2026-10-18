@@ -1,0 +1,4 @@
+﻿# CI: run tests on push (to be written)
+name: ci
+on: [push]
+jobs: {}

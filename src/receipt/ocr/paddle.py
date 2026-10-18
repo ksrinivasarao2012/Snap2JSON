@@ -1,0 +1,1 @@
+﻿"""PaddleOCR wrapper: image -> text."""

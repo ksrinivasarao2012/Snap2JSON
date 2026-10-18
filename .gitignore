@@ -1,0 +1,9 @@
+﻿data/raw/*
+!data/raw/.gitkeep
+cache/
+.env
+*.db
+__pycache__/
+.venv/
+*.egg-info/
+.ipynb_checkpoints/
