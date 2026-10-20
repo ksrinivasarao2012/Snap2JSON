@@ -13,12 +13,13 @@ dependencies = [
     "datasets",
     "python-dotenv",
     "Pillow",
+    "rapidfuzz",
 ]
 
 [project.optional-dependencies]
 dev = ["pytest"]
 ocr = ["paddleocr", "paddlepaddle", "pytesseract"]
-models = ["torch", "transformers", "google-genai", "rapidfuzz"]
+models = ["torch", "transformers", "google-genai"]
 app = ["fastapi", "uvicorn", "streamlit", "python-multipart"]
 
 [tool.setuptools.packages.find]
