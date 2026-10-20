@@ -55,4 +55,6 @@ Live Azure demo: only PaddleOCR+Gemini and Gemini vision. Open models run only i
 `src/receipt/` (schema, normalize, cache, cost, ocr/, extractors/) · `data/scripts/` · `eval/` · `results/` · `app/` (api, ui) · `tests/` · `docker/` · `.github/workflows/`
 
 ## Status
-Project structure created with stubs only. No model, OCR or evaluation logic written yet.
+Done: folder structure, schema, normalize (+tests), CORD download/mapping, splits (val 100, test 100, train sample 150 with seed 42, degraded test 100), ground truth in `data/processed/`.
+CORD findings above were from 20 receipts; on the full splits total is present in 98/100 val and 95/100 test, subtotal 67/65, tax 47/41.
+Not started: metrics, OCR, extractors, cache, cost, eval runner, API, UI, Docker, CI.
