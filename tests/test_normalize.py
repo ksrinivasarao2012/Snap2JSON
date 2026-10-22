@@ -42,3 +42,13 @@ def test_parse_qty_values(raw, expected):
 @pytest.mark.parametrize("raw", [None, "", "x"])
 def test_parse_qty_none(raw):
     assert parse_qty(raw) is None
+
+
+@pytest.mark.parametrize("raw,expected", [
+    ("-Rp 34,363", -34363.0),
+    ("-9,545", -9545.0),
+    ("-60.000", -60000.0),
+    ("Rp -2.045", -2045.0),
+])
+def test_parse_amount_sign(raw, expected):
+    assert parse_amount(raw) == expected

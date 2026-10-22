@@ -9,6 +9,7 @@ def parse_amount(value) -> Optional[float]:
     Rupiah amounts normally have no decimals, so a separator followed by 3 digits is a thousands
     separator. A separator followed by exactly 2 final digits is a decimal part
     ('Rp 58000.00' -> 58000.0, '9.500,00' -> 9500.0, '5272.73' -> 5272.73).
+    A minus sign before the digits is kept ('-Rp 34,363' -> -34363.0; discount lines).
     Returns None when there are no digits.
     """
     if value is None:
@@ -21,7 +22,8 @@ def parse_amount(value) -> Optional[float]:
     digits = re.sub(r"\D", "", s)
     if not digits:
         return None
-    return float(f"{digits}.{cents}") if cents else float(digits)
+    sign = -1 if re.match(r"^\D*-", s) else 1
+    return sign * (float(f"{digits}.{cents}") if cents else float(digits))
 
 
 def parse_qty(value) -> Optional[float]:

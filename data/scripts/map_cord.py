@@ -1,8 +1,9 @@
-﻿"""Map CORD gt_parse labels into our schema; writes ground truth to data/processed/<split>.jsonl.
+"""Map CORD gt_parse labels into our schema; writes ground truth to data/processed/<split>.jsonl.
 
 Usage: python data/scripts/map_cord.py [validation test train]
 Merchant and date are not labelled in CORD, so they are always null (and not scored).
-Nested item modifiers (menu.sub) are ignored.
+Nested item modifiers (menu.sub, e.g. "+ Extra Shot") are not items: their names are kept in "sub_items" so the
+scorer can ignore a prediction that lists one (the prompt never asks about them).
 """
 import json
 import sys
@@ -26,6 +27,16 @@ def as_list(x):
 
 def as_dict(x):
     return x if isinstance(x, dict) else {}
+
+
+def sub_item_names(gt: dict) -> list:
+    names = []
+    for m in as_list(gt.get("menu")):
+        for s in as_list(as_dict(m).get("sub")):
+            name = as_dict(s).get("nm")
+            if isinstance(name, str) and name.strip():
+                names.append(name.strip())
+    return names
 
 
 def map_gt_parse(gt: dict) -> Receipt:
@@ -55,7 +66,8 @@ def main(splits):
             for line in src:
                 row = json.loads(line)
                 rec = map_gt_parse(row["gt_parse"])
-                dst.write(json.dumps({"id": row["id"], "image": row["image"], "receipt": rec.model_dump()},
+                dst.write(json.dumps({"id": row["id"], "image": row["image"], "receipt": rec.model_dump(),
+                                      "sub_items": sub_item_names(row["gt_parse"])},
                                      ensure_ascii=False) + "\n")
                 n += 1
         print(f"{split}: {n} receipts -> {OUT / (split + '.jsonl')}")

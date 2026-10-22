@@ -52,7 +52,7 @@ def main():
             rid = f"{row['id']}_{name}"
             fn(img, rng).save(out_dir / f"{rid}.png")
             out_rows.append({"id": rid, "image": f"test_degraded/{rid}.png", "degradation": name,
-                             "receipt": row["receipt"]})
+                             "receipt": row["receipt"], "sub_items": row.get("sub_items", [])})
     with open(ROOT / "data" / "processed" / "test_degraded.jsonl", "w", encoding="utf-8") as f:
         for r in out_rows:
             f.write(json.dumps(r, ensure_ascii=False) + "\n")

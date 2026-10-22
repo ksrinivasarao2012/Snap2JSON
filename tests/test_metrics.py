@@ -64,3 +64,21 @@ def test_aggregate():
     assert agg["total_acc"] == 0.5 and agg["total_n"] == 2
     assert agg["tax_acc"] is None
     assert agg["items_precision"] == 1.0 and agg["items_recall"] == 0.5
+
+
+def test_sub_items_ignored_not_counted_wrong():
+    gt = [item("Iced Latte")]
+    pred = [item("Iced Latte"), item("Extra Shot", price=5000.0), item("Cookie")]
+    assert score_items(pred, gt) == (1, 3, 1)
+    assert score_items(pred, gt, sub_items=["+ Extra Shot", "Oat Milk"]) == (1, 2, 1)
+
+
+def test_sub_item_name_can_still_match_a_real_item():
+    gt = [item("Extra Shot")]
+    assert score_items([item("Extra Shot")], gt, sub_items=["Extra Shot"]) == (1, 1, 1)
+
+
+def test_score_receipt_passes_sub_items():
+    gt = {"total": 1000.0, "items": [item("A")]}
+    r = score_receipt({"total": 1000.0, "items": [item("A"), item("Oat Milk")]}, gt, sub_items=["Oat Milk"])
+    assert (r["items_matched"], r["items_pred"], r["items_gt"]) == (1, 1, 1)

@@ -72,9 +72,11 @@ def load_ocr_seconds(ids, timing_dir=OCR_TIMING):
 def summarize(out_path, rows, ocr_seconds=None):
     """ocr_seconds ({id: s}, OCR+LLM only) adds end-to-end time = OCR + model call."""
     gt = {r["id"]: r["receipt"] for r in rows}
+    subs = {r["id"]: r.get("sub_items", []) for r in rows}
     outs = [json.loads(l) for l in open(out_path, encoding="utf-8")]
     outs = [o for o in outs if o["receipt_id"] in gt]
-    summary = aggregate([score_receipt(o["receipt"], gt[o["receipt_id"]]) for o in outs])
+    summary = aggregate([score_receipt(o["receipt"], gt[o["receipt_id"]], sub_items=subs[o["receipt_id"]])
+                         for o in outs])
     secs = [o["seconds"] for o in outs]
     summary.update(
         n_receipts_in_split=len(rows),

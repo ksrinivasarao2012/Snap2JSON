@@ -40,8 +40,17 @@ def _item_match(p, g, threshold):
     return score if score >= threshold else None
 
 
-def score_items(pred_items, gt_items, threshold=NAME_THRESHOLD):
-    """One-to-one greedy matching, best name scores first. Returns (matched, n_pred, n_gt)."""
+def _is_sub_item(p, sub_items, threshold):
+    name = _norm_text(p.get("name")) or ""
+    return any(fuzz.ratio(name, _norm_text(s) or "") >= threshold for s in sub_items)
+
+
+def score_items(pred_items, gt_items, threshold=NAME_THRESHOLD, sub_items=()):
+    """One-to-one greedy matching, best name scores first. Returns (matched, n_pred, n_gt).
+
+    sub_items: names of the receipt's modifier lines (CORD menu.sub). The prompt never asks about them, so an
+    unmatched prediction whose name matches one is neither right nor wrong: it is left out of n_pred.
+    """
     pairs = []
     for i, p in enumerate(pred_items):
         for j, g in enumerate(gt_items):
@@ -55,7 +64,8 @@ def score_items(pred_items, gt_items, threshold=NAME_THRESHOLD):
             used_p.add(i)
             used_g.add(j)
             matched += 1
-    return matched, len(pred_items), len(gt_items)
+    ignored = sum(1 for i, p in enumerate(pred_items) if i not in used_p and _is_sub_item(p, sub_items, threshold))
+    return matched, len(pred_items) - ignored, len(gt_items)
 
 
 def prf(matched, n_pred, n_gt):
@@ -65,9 +75,10 @@ def prf(matched, n_pred, n_gt):
     return p, r, f1
 
 
-def score_receipt(pred, gt, threshold=NAME_THRESHOLD):
+def score_receipt(pred, gt, threshold=NAME_THRESHOLD, sub_items=()):
     """Per-receipt result. pred=None means invalid JSON (everything counts as wrong)."""
-    matched, n_pred, n_gt = score_items((pred or {}).get("items") or [], gt.get("items") or [], threshold)
+    matched, n_pred, n_gt = score_items((pred or {}).get("items") or [], gt.get("items") or [], threshold,
+                                        sub_items)
     return {
         "json_valid": pred is not None,
         "header": score_header(pred, gt),
