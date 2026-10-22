@@ -7,31 +7,38 @@ text layouts (e.g. rows) can be built from them later.
 from pathlib import Path
 from typing import Union
 
+# Receipts are photos of flat paper: skip the page-orientation and unwarping models (faster).
+# Mobile models: ~5x faster than the default medium ones on CPU (timed on 10 val receipts).
+BASE_KWARGS = dict(
+    lang="en",
+    text_detection_model_name="PP-OCRv5_mobile_det",
+    text_recognition_model_name="en_PP-OCRv5_mobile_rec",
+    use_doc_orientation_classify=False,
+    use_doc_unwarping=False,
+    use_textline_orientation=False,
+    enable_mkldnn=False,
+)
+
 _ocr = None
+
+
+def make_ocr(**overrides):
+    """A PaddleOCR instance with the project settings, optionally changed (e.g. text_det_thresh)."""
+    from paddleocr import PaddleOCR
+
+    return PaddleOCR(**{**BASE_KWARGS, **overrides})
 
 
 def _get_ocr():
     global _ocr
     if _ocr is None:
-        from paddleocr import PaddleOCR
-
-        # Receipts are photos of flat paper: skip the page-orientation and unwarping models (faster).
-        _ocr = PaddleOCR(
-            lang="en",
-            # mobile models: ~5x faster than the default medium ones on CPU (timed on 10 val receipts)
-            text_detection_model_name="PP-OCRv5_mobile_det",
-            text_recognition_model_name="en_PP-OCRv5_mobile_rec",
-            use_doc_orientation_classify=False,
-            use_doc_unwarping=False,
-            use_textline_orientation=False,
-            enable_mkldnn=False,
-        )
+        _ocr = make_ocr()
     return _ocr
 
 
-def ocr_boxes(path: Union[str, Path]) -> list:
+def ocr_boxes(path: Union[str, Path], ocr=None) -> list:
     """[{"text", "box": [x_min, y_min, x_max, y_max], "score"}, ...] in PaddleOCR's own order."""
-    result = _get_ocr().predict(str(path))
+    result = (ocr or _get_ocr()).predict(str(path))
     if not result:
         return []
     res = result[0]
