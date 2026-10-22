@@ -207,6 +207,9 @@ Plain OCR text showed fewer quantity errors only because many of those items wer
 - **Quantity scoring is strict:** exact match, and a missing quantity counts as wrong. CORD labels a quantity only when one is printed: each of the 767 quantity labels (validation, test, train) matches a printed quantity word in CORD's own word annotations, so quantity errors are real (an earlier version said otherwise; that was wrong).
 - **Section 4 is a simple first-match diagnostic,** not the official metric.
 - **Name threshold 80** was checked by hand on validation (see the note at the top); a looser 60 changes no conclusion.
+- **Failure audit** (`results/REPORT.md` section 7.2, 20 validation errors per run): with plain OCR text, 12 of 20
+  2B errors came from the input, 8 of them from order (a price before its name). With rows (A), 7 of 20 came from
+  OCR (4 misreads, 1 missing qty, 2 row-grouping slips), and the rest were the model's.
 - **The prompt is unchanged.** A rule like "if no quantity is printed, use 1" was considered and rejected: every scored quantity is printed, so the fix belongs in OCR and layout, not the prompt.
 
 ## 8. Next steps

@@ -11,7 +11,8 @@ All scores rose or stayed equal, and no conclusion about image vs text changed. 
 `+ Extra Shot`, which our ground truth leaves out and the prompt never asks about) is no longer counted as wrong.
 This raised item precision for every method, the VLM most; header fields did not change.
 **Also 2026-10-23:** the item name-match threshold (80) was checked by hand on validation (section 7.1). It is kept;
-a looser check at 60 raises every item F1 a little and changes no conclusion.
+a looser check at 60 raises every item F1 a little and changes no conclusion. 100 errors were audited by hand
+(section 7.2): only 3 were the scorer's fault and 2 were label problems.
 
 **Key update (section 6):** the OCR text in the main runs put every OCR box on its own line, which splits printed rows.
 Keeping rows together (Method A) raises 2B OCR+LLM test total accuracy from 0.600 to 0.737 and subtotal from 0.769 to
@@ -320,6 +321,44 @@ not depend on this threshold):
 
 The looser threshold helps OCR+LLM slightly more (its names are more often trimmed), but the image method stays far
 ahead on every split and model size, so the conclusions do not depend on the threshold.
+
+### 7.2 Failure audit: whose fault is each error? (validation only)
+
+100 errors were read by hand: 20 per run from 2B OCR+LLM, 2B OCR+LLM rows, 2B VLM, 8B OCR+LLM and 8B VLM, sampled with a
+fixed seed (up to 7 wrong header fields and 13 item errors each). A wrong qty or price on a real item is one error
+here, although the scorer counts it as one miss and one extra. Each error was checked against CORD's printed-word
+annotations, the model output and, for OCR methods, the OCR text that method saw. Sheet:
+`results/audit_validation.csv` (cause and a one-line note per error); script: `eval/audit_failures.py`.
+
+Causes:
+- **model:** the information was in the model's input, but the model got it wrong.
+- **ocr:** the OCR text was wrong (misread), lacked it (missing), or put it in a misleading order (e.g. a price
+  before its name in plain text, or a row-grouping slip), so the model could not get it from its input.
+- **scorer:** the answer was right but was counted wrong.
+- **gt:** the CORD label is wrong or debatable.
+
+| Run (20 errors each) | model | ocr (misread / missing / order) | scorer | gt |
+|---|---|---|---|---|
+| 2B OCR+LLM (plain) | 8 | 12 (3 / 1 / 8) | 0 | 0 |
+| 2B OCR+LLM rows (A) | 13 | 7 (4 / 1 / 2) | 0 | 0 |
+| 8B OCR+LLM (plain) | 14 | 6 (4 / 2 / 0) | 0 | 0 |
+| 2B VLM | 18 | - | 1 | 1 |
+| 8B VLM | 17 | - | 2 | 1 |
+
+- **The scores are mostly honest:** only 3 of 100 errors were the scorer's (words reordered, or printed add-ons joined
+  to the name) and 2 were label problems. In val_0037, "Gyro Platter Regular 50,000" is printed but missing from
+  CORD's item labels. In val_0021, CORD counts a discount line as an item, which it does not do on other receipts.
+  Neither was changed in the ground truth.
+- **For 2B on plain OCR text, most errors (12 of 20) come from the input,** and 8 of those are order: the price
+  comes before its name, so the model pairs it with the wrong item. Rows (Method A) cut the OCR share to 7 of 20.
+  This supports section 6: layout loss, not the model, drives much of the plain OCR+LLM gap at 2B.
+- **8B on plain text has no order errors in the sample;** its OCR errors are misreads and missing quantities.
+- **Repeated model mistakes, all methods** (the counts below are from the notes):
+  - Tax: the service charge is given as tax (9 errors).
+  - Total: the cash paid, the change or a voucher amount is given as total (7).
+  - Names printed over two lines are cut short or split into two items (13).
+  - Discount lines are listed as items (3), or mixed up with a real item's name or price (2).
+- One run, 20 errors per run, labelled by one person: the shares are rough. The sample is from validation only.
 
 ## 8. Limitations
 
