@@ -10,6 +10,9 @@ re-run. Scores rose or stayed equal and the conclusions hold.
 **Also 2026-10-23:** a predicted item that matches one of the receipt's sub-item lines (modifiers, which our ground
 truth leaves out and the prompt never asks about) is no longer counted as wrong. This raised item precision for
 every method; header fields did not change.
+**Also 2026-10-23:** the item name threshold (80) was checked by hand on validation (`results/REPORT.md` section 7.1)
+and kept. At a looser threshold of 60, 2B test item F1 is plain 0.484, rows 0.537, VLM 0.900 (at 80: 0.436, 0.495,
+0.881), so A's small item gain holds.
 
 ## 1. Summary
 
@@ -203,6 +206,7 @@ Plain OCR text showed fewer quantity errors only because many of those items wer
 - **Row grouping is a simple rule** with fixed settings (0.5 × median height, 50% x-overlap). They were chosen by looking at a few receipts during development, not tuned on any split's scores. The example receipts were from test and validation.
 - **Quantity scoring is strict:** exact match, and a missing quantity counts as wrong. CORD labels a quantity only when one is printed: each of the 767 quantity labels (validation, test, train) matches a printed quantity word in CORD's own word annotations, so quantity errors are real (an earlier version said otherwise; that was wrong).
 - **Section 4 is a simple first-match diagnostic,** not the official metric.
+- **Name threshold 80** was checked by hand on validation (see the note at the top); a looser 60 changes no conclusion.
 - **The prompt is unchanged.** A rule like "if no quantity is printed, use 1" was considered and rejected: every scored quantity is printed, so the fix belongs in OCR and layout, not the prompt.
 
 ## 8. Next steps

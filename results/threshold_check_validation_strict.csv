@@ -1,0 +1,123 @@
+﻿receipt_id,score,pred_name,gt_name,qty,price,n_runs,runs,same
+val_0040,51.3,Chilli Sauce H,Gojek Chicken Soy Sauce F,1,180000,1,ocr_llm__Qwen_Qwen3-VL-8B-Instruct,n
+val_0025,51.4,1Prs Mie Rokung Trsi,Mie Trsi Kgkung,1,35500,3,ocr_llm__Qwen_Qwen3-VL-4B-Instruct ocr_llm__Qwen_Qwen3-VL-8B-Instruct ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,n
+val_0065,52.6,BASO TAHU,NASI PUTIH,1,6000,3,ocr_llm__Qwen_Qwen3-VL-2B-Instruct ocr_llm__Qwen_Qwen3-VL-4B-Instruct ocr_llm__Qwen_Qwen3-VL-8B-Instruct,n
+val_0024,52.9,SAUSAGE BREAD,HAM CHEESE FLAT BREAD,1,20000,1,ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,n
+val_0096,53.3,Choco Cheese Exclusive Member Car,Choco Cheese,1,,1,vlm__Qwen_Qwen3-VL-4B-Instruct,y
+val_0025,55.6,1Prs Mie Kgtkung Trsi,Mie Trsi Kgkung,1,35500,1,vlm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0025,57.1,1Prs Mie Kgkung Trsi,Mie Trsi Kgkung,1,35500,1,vlm__Qwen_Qwen3-VL-4B-Instruct,y
+val_0041,58.8,U SAM GYEOP,U SEOL,2,390000,1,ocr_llm__Qwen_Qwen3-VL-2B-Instruct,n
+val_0041,58.8,U SEOL,U SAM GYEOP,1,0,1,ocr_llm__Qwen_Qwen3-VL-2B-Instruct,n
+val_0025,60,1Prs Mie Rokung,Mie Trsi Kgkung,1,35500,1,ocr_llm__Qwen_Qwen3-VL-2B-Instruct,n
+val_0041,60.5,CHAM KKOT SAL,SUNDUBU(TUKBEGI) CHAM KKOT SAL,2,620000,3,vlm__Qwen_Qwen3-VL-2B-Instruct vlm__Qwen_Qwen3-VL-4B-Instruct vlm__Qwen_Qwen3-VL-8B-Instruct,n
+val_0041,60.9,EL KEUN,EL KEUN HWANGTAE,1,120000,4,ocr_llm__Qwen_Qwen3-VL-2B-Instruct ocr_llm__Qwen_Qwen3-VL-4B-Instruct ocr_llm__Qwen_Qwen3-VL-8B-Instruct ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,n
+val_0040,61.1,Soy Sauce F,Gojek Chicken Soy Sauce F,1,180000,1,vlm__Qwen_Qwen3-VL-2B-Instruct,n
+val_0040,63.4,Gojek Chicken,Gojek Chicken Chilli Sauce H,1,95000,6,ocr_llm__Qwen_Qwen3-VL-4B-Instruct ocr_llm__Qwen_Qwen3-VL-8B-Instruct ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct vlm__Qwen_Qwen3-VL-2B-Instruct vlm__Qwen_Qwen3-VL-4B-Instruct vlm__Qwen_Qwen3-VL-8B-Instruct,n
+val_0025,64.3,1Frs Leng Hong,Leng Hong Kien,1,30000,1,ocr_llm__Qwen_Qwen3-VL-2B-Instruct,n
+val_0087,64.3,Fruit Mac,M-Passion Fruit Mac,1,29000,2,ocr_llm__Qwen_Qwen3-VL-2B-Instruct ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,n
+val_0076,64.7,BANDENG ORI,Enting2 Dua Bandeng Ori,1,31000,1,ocr_llm__Qwen_Qwen3-VL-2B-Instruct,n
+val_0025,66.7,Mie Kgkung Trsi,Mie Trsi Kgkung,1,35500,1,vlm__Qwen_Qwen3-VL-2B-Instruct,y
+val_0039,66.7,PKT TELOR,PKT TELOR/PERKEDEL,,26000,1,ocr_llm__Qwen_Qwen3-VL-4B-Instruct,y
+val_0040,66.7,Chilli Sauce H,Gojek Chicken Chilli Sauce H,1,95000,1,ocr_llm__Qwen_Qwen3-VL-2B-Instruct,n
+val_0041,66.7,HWANGTAE,EL KEUN HWANGTAE,1,120000,3,vlm__Qwen_Qwen3-VL-2B-Instruct vlm__Qwen_Qwen3-VL-4B-Instruct vlm__Qwen_Qwen3-VL-8B-Instruct,n
+val_0089,66.7,6001-Plastic Bag,Plastic Bag Small,1,0,1,ocr_llm__Qwen_Qwen3-VL-4B-Instruct,n
+val_0040,68.4,Gojek Chicken,Gojek Chicken Soy Sauce F,1,180000,5,ocr_llm__Qwen_Qwen3-VL-2B-Instruct ocr_llm__Qwen_Qwen3-VL-4B-Instruct ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct vlm__Qwen_Qwen3-VL-4B-Instruct vlm__Qwen_Qwen3-VL-8B-Instruct,n
+val_0004,71,BBQ Chicken - Sedang,BBQ Chicken,1,41000,1,vlm__Qwen_Qwen3-VL-4B-Instruct,y
+val_0019,73.2,GREEN TEA (CLAS),FUTAMI 17 GREEN TEA (CLAS,1,12500,1,ocr_llm__Qwen_Qwen3-VL-2B-Instruct,n
+val_0041,73.7,CHULPAN CHEESE,CHULPAN CHEESE DAK GALBI,1,230000,7,ocr_llm__Qwen_Qwen3-VL-2B-Instruct ocr_llm__Qwen_Qwen3-VL-4B-Instruct ocr_llm__Qwen_Qwen3-VL-8B-Instruct ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct vlm__Qwen_Qwen3-VL-2B-Instruct vlm__Qwen_Qwen3-VL-4B-Instruct vlm__Qwen_Qwen3-VL-8B-Instruct,n
+val_0019,75,GREEN TEA (CLAS,FUTAMI 17 GREEN TEA (CLAS,1,12500,1,ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,n
+val_0062,75,MiTo,Milo,1,9091,1,vlm__Qwen_Qwen3-VL-4B-Instruct,y
+val_0058,76.2,1 Viet Milk Coffee +Hot +M,Viet Milk Coffee,1,25000,1,vlm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0089,78.6,Plastic Bag,Plastic Bag Small,1,0,1,vlm__Qwen_Qwen3-VL-2B-Instruct,n
+val_0076,78.9,Dua Bandeng Ori,Enting2 Dua Bandeng Ori,1,31000,1,ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,n
+val_0020,80,1 TAHU,TAHU,1,5000,1,vlm__Qwen_Qwen3-VL-2B-Instruct,y
+val_0025,80,1Prs Ha Kaou Udnng,Ha Kaou Udng,1,28000,1,vlm__Qwen_Qwen3-VL-4B-Instruct,y
+val_0040,80,Gojek French,Gojek French Fries,1,70000,3,ocr_llm__Qwen_Qwen3-VL-4B-Instruct ocr_llm__Qwen_Qwen3-VL-8B-Instruct ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,n
+val_0063,80,ISI CANFUR,ISI CAMPUR,1,43636,1,vlm__Qwen_Qwen3-VL-4B-Instruct,y
+val_0094,80.8,Emily's Shrimp Scampi,Emily's Shrimp Scampi Fettucine,1,69000,2,ocr_llm__Qwen_Qwen3-VL-2B-Instruct ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,n
+val_0075,81.8,Winger HC,KFC Winger HC,2,40000,1,ocr_llm__Qwen_Qwen3-VL-8B-Instruct,n
+val_0025,82.8,1Prs Ha Kaou Udng,Ha Kaou Udng,1,28000,4,ocr_llm__Qwen_Qwen3-VL-2B-Instruct ocr_llm__Qwen_Qwen3-VL-4B-Instruct ocr_llm__Qwen_Qwen3-VL-8B-Instruct vlm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0025,82.8,1615 Es Teh Tawar,Es Teh Tawar,1,7000,4,ocr_llm__Qwen_Qwen3-VL-2B-Instruct ocr_llm__Qwen_Qwen3-VL-4B-Instruct ocr_llm__Qwen_Qwen3-VL-8B-Instruct ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,y
+val_0025,82.8,1Prs Sop Sui Jiao,Sop Sui Jiao,1,33000,4,ocr_llm__Qwen_Qwen3-VL-4B-Instruct ocr_llm__Qwen_Qwen3-VL-8B-Instruct vlm__Qwen_Qwen3-VL-4B-Instruct vlm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0025,82.8,1Gls Es Teh Tawar,Es Teh Tawar,1,7000,1,vlm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0002,83.3,S-Ovaltine,S-Ovaltine 50%,1,20000,4,ocr_llm__Qwen_Qwen3-VL-4B-Instruct ocr_llm__Qwen_Qwen3-VL-8B-Instruct vlm__Qwen_Qwen3-VL-2B-Instruct vlm__Qwen_Qwen3-VL-4B-Instruct,n
+val_0010,83.3,Serbu,Serbu 1,2,40000,1,vlm__Qwen_Qwen3-VL-4B-Instruct,y
+val_0020,83.3,2 JAMUR,JAMUR,2,10000,1,vlm__Qwen_Qwen3-VL-2B-Instruct,y
+val_0053,83.3,Large,Large 1,1,11000,1,vlm__Qwen_Qwen3-VL-4B-Instruct,y
+val_0095,83.3,1 SAYAP,SAYAP,1,13636,1,ocr_llm__Qwen_Qwen3-VL-2B-Instruct,y
+val_0041,84.6,BLACK COFFE,ICE BLACK COFFE,1,0,1,ocr_llm__Qwen_Qwen3-VL-8B-Instruct,n
+val_0025,84.8,1Prs Sio May Kpting,Sio May Kpting,1,23500,5,ocr_llm__Qwen_Qwen3-VL-2B-Instruct ocr_llm__Qwen_Qwen3-VL-4B-Instruct ocr_llm__Qwen_Qwen3-VL-8B-Instruct vlm__Qwen_Qwen3-VL-4B-Instruct vlm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0025,84.8,1Frs Leng Hong Kien,Leng Hong Kien,1,30000,3,ocr_llm__Qwen_Qwen3-VL-4B-Instruct ocr_llm__Qwen_Qwen3-VL-8B-Instruct ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,y
+val_0025,84.8,1Prs Leng Hong Kien,Leng Hong Kien,1,30000,2,vlm__Qwen_Qwen3-VL-4B-Instruct vlm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0054,84.8,Blueberry Fuji,4003-Blueberry Fuji,1,40000,1,vlm__Qwen_Qwen3-VL-2B-Instruct,y
+val_0025,85.7,1Prs Siomay Kmbinasi,Siomay Kmbinasi,1,23000,5,ocr_llm__Qwen_Qwen3-VL-2B-Instruct ocr_llm__Qwen_Qwen3-VL-4B-Instruct ocr_llm__Qwen_Qwen3-VL-8B-Instruct vlm__Qwen_Qwen3-VL-4B-Instruct vlm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0025,85.7,Prs Sop Sui Jiao,Sop Sui Jiao,1,33000,1,ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,y
+val_0025,85.7,Prs Ha Kaou Udng,Ha Kaou Udng,1,28000,1,ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,y
+val_0032,85.7,1 Nasi(MLY),Nasi (MLY),1,6000,1,ocr_llm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0056,85.7,Thai Iced T.,Thai Iced T. .x1,,20000,2,ocr_llm__Qwen_Qwen3-VL-2B-Instruct ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,y
+val_0059,85.7,XLB Org Pork,XLB Org Pork 10x,1,78000,2,ocr_llm__Qwen_Qwen3-VL-2B-Instruct ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,n
+val_0088,86.7,1 PAKET BERA UP3,PAKET BER4 UP3,1,154545,2,ocr_llm__Qwen_Qwen3-VL-2B-Instruct ocr_llm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0059,87,Pork Belly,LM Pork Belly,1,88000,1,ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,n
+val_0083,87,1X S-Milk tea,S-Milk tea,1,17000,1,ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,y
+val_0054,87.2,Plastic Bag Small,6001-Plastic Bag Small,1,0,1,vlm__Qwen_Qwen3-VL-2B-Instruct,y
+val_0089,87.2,6001-Plastic Bag Small,Plastic Bag Small,1,0,1,vlm__Qwen_Qwen3-VL-4B-Instruct,y
+val_0025,87.5,Prs Sio May Kpting,Sio May Kpting,1,23500,1,ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,y
+val_0052,87.5,KENTHIR,KENTHIR 2,2,42000,2,ocr_llm__Qwen_Qwen3-VL-8B-Instruct vlm__Qwen_Qwen3-VL-4B-Instruct,y
+val_0059,87.5,Siew Mal,Siew Mai,1,38800,4,ocr_llm__Qwen_Qwen3-VL-2B-Instruct ocr_llm__Qwen_Qwen3-VL-4B-Instruct ocr_llm__Qwen_Qwen3-VL-8B-Instruct ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,y
+val_0084,87.5,1 x HAZELNUT CHOCO MT ( R ),HAZELNUT CHOCO MT (R),1,24000,1,vlm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0089,87.8,1023-Chocochip & Walnut,Chocochip & Walnut,1,29000,3,ocr_llm__Qwen_Qwen3-VL-8B-Instruct ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct vlm__Qwen_Qwen3-VL-4B-Instruct,y
+val_0025,88.2,Prs Siomay Kmbinasi,Siomay Kmbinasi,1,23000,1,ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,y
+val_0069,88.9,GADD-GADO,GADO-GADO,1,34500,2,ocr_llm__Qwen_Qwen3-VL-8B-Instruct ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,y
+val_0059,89.5,Fish Fillet Garlic,DF Fish Fillet Garlc,1,108000,1,ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,n
+val_0069,89.5,1 SOTO BETAWI + NAST,SOTO BETAWI + NASI,1,57500,1,ocr_llm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0055,89.7,Cha Keaw L... x2,Cha Keaw L...,2,60000,2,vlm__Qwen_Qwen3-VL-2B-Instruct vlm__Qwen_Qwen3-VL-2B-Instruct,y
+val_0056,89.7,Thai Iced T..,Thai Iced T. .x1,,20000,1,vlm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0052,90,2 TEH MANIS,TEH MANIS,2,8000,2,ocr_llm__Qwen_Qwen3-VL-2B-Instruct ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,y
+val_0063,90,ISI CANPUR,ISI CAMPUR,1,43636,1,vlm__Qwen_Qwen3-VL-2B-Instruct,y
+val_0069,90,1 GADO-GADO,GADO-GADO,1,34500,1,vlm__Qwen_Qwen3-VL-2B-Instruct,y
+val_0083,90,S-Mi1k tea,S-Milk tea,1,17000,1,vlm__Qwen_Qwen3-VL-2B-Instruct,y
+val_0032,90.9,1 Nasi (MLY),Nasi (MLY),1,6000,1,vlm__Qwen_Qwen3-VL-4B-Instruct,y
+val_0045,90.9,ADP Seafood,AOP Seafood,1,85000,2,vlm__Qwen_Qwen3-VL-2B-Instruct vlm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0052,90.9,2 KOL GORENG,KOL GORENG,2,6000,2,ocr_llm__Qwen_Qwen3-VL-2B-Instruct ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,y
+val_0067,90.9,1 PAKET BER2,PAKET BER2,1,69091,4,ocr_llm__Qwen_Qwen3-VL-2B-Instruct ocr_llm__Qwen_Qwen3-VL-4B-Instruct ocr_llm__Qwen_Qwen3-VL-8B-Instruct vlm__Qwen_Qwen3-VL-4B-Instruct,y
+val_0070,90.9,Lewon Plate,Lemon Plate,1,19000,4,ocr_llm__Qwen_Qwen3-VL-2B-Instruct ocr_llm__Qwen_Qwen3-VL-4B-Instruct ocr_llm__Qwen_Qwen3-VL-8B-Instruct ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,y
+val_0079,90.9,1 Crab Stick,Crab Stick,1,9000,1,ocr_llm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0079,90.9,1 Nasi (MLY),Nasi (MLY),1,6000,1,ocr_llm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0093,90.9,1 PAKET BER4,PAKET BER4,1,138182,2,vlm__Qwen_Qwen3-VL-4B-Instruct vlm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0029,91.7,Sabun Beras 1,Sabun Beras,1,30000,4,ocr_llm__Qwen_Qwen3-VL-8B-Instruct vlm__Qwen_Qwen3-VL-2B-Instruct vlm__Qwen_Qwen3-VL-4B-Instruct vlm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0048,91.7,Chokocha FIt,Chokocha Flt,1,13636,6,ocr_llm__Qwen_Qwen3-VL-2B-Instruct ocr_llm__Qwen_Qwen3-VL-4B-Instruct ocr_llm__Qwen_Qwen3-VL-8B-Instruct ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct vlm__Qwen_Qwen3-VL-2B-Instruct vlm__Qwen_Qwen3-VL-4B-Instruct,y
+val_0053,91.7,1 Pastry Keju,Pastry Keju,1,20000,1,ocr_llm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0030,92.3,REDBEAN BREAD,REDBEAN BRE/D,1,9000,2,vlm__Qwen_Qwen3-VL-2B-Instruct vlm__Qwen_Qwen3-VL-4B-Instruct,y
+val_0034,92.7,GRILLED BABY POTATO,GRILLED BABY POTATO (R,1,50500,1,ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,y
+val_0059,92.7,OF Fish Fillet Garlic,DF Fish Fillet Garlc,1,108000,1,ocr_llm__Qwen_Qwen3-VL-2B-Instruct,y
+val_0036,92.9,Soft Dri 3 Top,Soft Ori 3 Top,1,17272,1,vlm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0088,92.9,PAKET BERA UP3,PAKET BER4 UP3,1,154545,2,ocr_llm__Qwen_Qwen3-VL-4B-Instruct ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,y
+val_0013,93.3,1 MINERAL 600 ML,MINERAL 600 ML,1,7727,3,ocr_llm__Qwen_Qwen3-VL-4B-Instruct ocr_llm__Qwen_Qwen3-VL-8B-Instruct ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,y
+val_0013,93.3,1 BULGOGI RICE R,BULGOGI RICE R,1,33636,3,ocr_llm__Qwen_Qwen3-VL-4B-Instruct ocr_llm__Qwen_Qwen3-VL-8B-Instruct ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,y
+val_0051,93.3,1 Wagyu Rice Box,Wagyu Rice Box,1,10000,1,vlm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0088,93.3,1 PAKET BER4 UP3,PAKET BER4 UP3,1,154545,1,vlm__Qwen_Qwen3-VL-4B-Instruct,y
+val_0059,93.8,XLB Org Pork 1Ox,XLB Org Pork 10x,1,78000,2,ocr_llm__Qwen_Qwen3-VL-4B-Instruct ocr_llm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0069,93.8,1 SOTO MEDAN+NASI,SOTO MEDAN+NASI,1,59500,1,vlm__Qwen_Qwen3-VL-2B-Instruct,y
+val_0001,94.1,Kopi Susu Kolone1,Kopi Susu Kolonel,1,23000,1,vlm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0058,94.1,1 Viet Milk Coffee,Viet Milk Coffee,1,25000,3,ocr_llm__Qwen_Qwen3-VL-2B-Instruct ocr_llm__Qwen_Qwen3-VL-8B-Instruct vlm__Qwen_Qwen3-VL-4B-Instruct,y
+val_0069,94.4,SOTO BETAWI + NAST,SOTO BETAWI + NASI,1,57500,2,ocr_llm__Qwen_Qwen3-VL-2B-Instruct ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,y
+val_0045,94.7,Omurice Katsy Curry,Omurice Katsu Curry,1,95000,3,ocr_llm__Qwen_Qwen3-VL-2B-Instruct ocr_llm__Qwen_Qwen3-VL-4B-Instruct ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,y
+val_0069,94.7,1 SOTO BETAWI + NASI,SOTO BETAWI + NASI,1,57500,1,vlm__Qwen_Qwen3-VL-2B-Instruct,y
+val_0059,95,OF Fish Fillet Garlc,DF Fish Fillet Garlc,1,108000,2,ocr_llm__Qwen_Qwen3-VL-4B-Instruct ocr_llm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0030,95.5,FRANKFRUT SAUSAGE ROLL,FRANKFRUT S/USAGE ROLL,1,12000,1,vlm__Qwen_Qwen3-VL-2B-Instruct,y
+val_0084,95.5,HAZELNUT CHOCO MT ( R ),HAZELNUT CHOCO MT (R),1,24000,9,ocr_llm__Qwen_Qwen3-VL-2B-Instruct ocr_llm__Qwen_Qwen3-VL-4B-Instruct ocr_llm__Qwen_Qwen3-VL-4B-Instruct ocr_llm__Qwen_Qwen3-VL-8B-Instruct ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct vlm__Qwen_Qwen3-VL-2B-Instruct vlm__Qwen_Qwen3-VL-2B-Instruct vlm__Qwen_Qwen3-VL-4B-Instruct vlm__Qwen_Qwen3-VL-4B-Instruct,y
+val_0011,95.8,Se'I Sopi Lada Hitam (J),Se'I Sapi Lada Hitam (J),1,35000,4,ocr_llm__Qwen_Qwen3-VL-2B-Instruct ocr_llm__Qwen_Qwen3-VL-4B-Instruct ocr_llm__Qwen_Qwen3-VL-8B-Instruct ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,y
+val_0086,96,LEMONADE 22OZ,LEMONADE22OZ,1,26000,5,ocr_llm__Qwen_Qwen3-VL-2B-Instruct ocr_llm__Qwen_Qwen3-VL-4B-Instruct vlm__Qwen_Qwen3-VL-2B-Instruct vlm__Qwen_Qwen3-VL-4B-Instruct vlm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0092,96,FC Winger HC,<FC Winger HC,1,20000,1,ocr_llm_rows__Qwen_Qwen3-VL-2B-Instruct,y
+val_0011,96.3,Se'I Sapi Sambal Matah (R),Se'I Sapi Sambal Matah ( R ),1,20000,1,vlm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0041,96.3,ICE COFFEE MIX,ICE COFFE MIX,3,0,1,vlm__Qwen_Qwen3-VL-2B-Instruct,y
+val_0041,96.8,ICE BLACK COFFEE,ICE BLACK COFFE,1,0,2,vlm__Qwen_Qwen3-VL-2B-Instruct vlm__Qwen_Qwen3-VL-4B-Instruct,y
+val_0049,96.8,Nasi Campur Bali,Nasi CampurBali,1,52000,1,vlm__Qwen_Qwen3-VL-2B-Instruct,y
+val_0056,96.8,Thai Iced T..x1,Thai Iced T. .x1,,20000,3,ocr_llm__Qwen_Qwen3-VL-8B-Instruct vlm__Qwen_Qwen3-VL-2B-Instruct vlm__Qwen_Qwen3-VL-4B-Instruct,y
+val_0094,96.9,1 Emily's Shrimp Scampi Fettucine,Emily's Shrimp Scampi Fettucine,1,69000,1,ocr_llm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0001,97.1,Kopi Susu Kolonel1,Kopi Susu Kolonel,1,23000,1,ocr_llm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0089,97.1,Chocchip & Walnut,Chocochip & Walnut,1,29000,1,vlm__Qwen_Qwen3-VL-2B-Instruct,y
+val_0059,97.6,DF Fish Fillet Garlic,DF Fish Fillet Garlc,1,108000,3,vlm__Qwen_Qwen3-VL-2B-Instruct vlm__Qwen_Qwen3-VL-4B-Instruct vlm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0034,97.8,GRILLED BABY POTATO (R),GRILLED BABY POTATO (R,1,50500,1,vlm__Qwen_Qwen3-VL-2B-Instruct,y
+val_0076,97.9,Ent ing2 Dua Bandeng Ori,Enting2 Dua Bandeng Ori,1,31000,1,ocr_llm__Qwen_Qwen3-VL-8B-Instruct,y
+val_0019,98,FUTAMI 17 GREEN TEA (CLAS),FUTAMI 17 GREEN TEA (CLAS,1,12500,1,vlm__Qwen_Qwen3-VL-2B-Instruct,y

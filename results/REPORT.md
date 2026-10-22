@@ -10,6 +10,8 @@ All scores rose or stayed equal, and no conclusion about image vs text changed. 
 **Also 2026-10-23:** a predicted item that matches one of the receipt's sub-item lines (modifiers such as
 `+ Extra Shot`, which our ground truth leaves out and the prompt never asks about) is no longer counted as wrong.
 This raised item precision for every method, the VLM most; header fields did not change.
+**Also 2026-10-23:** the item name-match threshold (80) was checked by hand on validation (section 7.1). It is kept;
+a looser check at 60 raises every item F1 a little and changes no conclusion.
 
 **Key update (section 6):** the OCR text in the main runs put every OCR box on its own line, which splits printed rows.
 Keeping rows together (Method A) raises 2B OCR+LLM test total accuracy from 0.600 to 0.737 and subtotal from 0.769 to
@@ -54,7 +56,7 @@ field are skipped for that field.
 ### Metrics
 
 - **Header fields** (total, subtotal, tax): exact match after number normalization.
-- **Items:** one-to-one matching; an item is correct if qty and price match exactly and the name is fuzzy-similar (rapidfuzz ratio >= 80, a provisional threshold). Reported as micro precision / recall / F1.
+- **Items:** one-to-one matching; an item is correct if qty and price match exactly and the name is fuzzy-similar (rapidfuzz ratio >= 80, checked on validation in section 7.1). Reported as micro precision / recall / F1.
   A predicted item whose name matches one of the receipt's sub-item lines (CORD `menu.sub`, e.g. modifiers) is left
   out of precision: neither right nor wrong. Extracting sub-items is a separate, untested question.
 - **JSON-valid rate:** output parses into our schema.
@@ -282,13 +284,50 @@ Total acc / Item F1. "OCR+LLM" is the plain format; "OCR+LLM rows" is Method A. 
 Validation scores are higher than test for most rows. Validation was not used for tuning, so this is not leakage; the
 splits just differ (and each has only 100 receipts).
 
+### 7.1 Name-match threshold check (validation only)
+
+An item counts as correct only if qty and price match exactly and the name similarity (rapidfuzz ratio) is at least 80.
+To check 80, every validation run was matched again with no name limit (same qty and price, one-to-one), and the
+122 distinct name pairs scoring 50-99 were labelled by hand under two rules:
+
+- **Strict** (`results/threshold_check_validation_strict.csv`): the name must be complete and read correctly. A
+  trimmed name (`EL KEUN` for `EL KEUN HWANGTAE`) or a misread word (`Mie Rokung` for `Mie Trsi Kgkung`) counts as
+  a different item. 91 same, 31 different.
+- **Lenient** (`..._lenient.csv`): the pair is the same receipt line and the name clearly refers to it. Only a
+  different item (e.g. prices swapped between two lines) counts as different. 116 same, 6 different.
+
+Errors at each threshold (same-item pairs rejected + different-item pairs accepted):
+
+| Threshold | 55 | 60 | 65 | 70 | 75 | 80 | 85 | 90 |
+|---|---|---|---|---|---|---|---|---|
+| Strict | 28 | 28 | 20 | 18 | 17 | **16** | 26 | 42 |
+| Lenient | 5 | **5** | 11 | 17 | 20 | 25 | 45 | 67 |
+
+- **80 is kept as the main threshold:** it is the best under the strict rule (8 rejected, 8 accepted).
+- **60 is the lenient check** (tied with 55; the stricter of the two). The most similar different-item pair, two
+  swapped lines, scores 58.8, so 60 sits close to the edge.
+- Many names printed over two lines are returned as two items (e.g. `Gojek Chicken` / `Chilli Sauce H`); a
+  half-name with the right price passes at 60 but not at 80, and the other half still counts as a wrong item.
+
+Item F1 on test at both thresholds (all runs: `results/tables/name_threshold_sensitivity.json`; header fields do
+not depend on this threshold):
+
+| Model | OCR+LLM @80 / @60 | OCR+LLM rows @80 / @60 | VLM @80 / @60 | VLM - OCR+LLM gap @80 / @60 |
+|---|---|---|---|---|
+| 2B | 0.436 / 0.484 | 0.495 / 0.537 | 0.881 / 0.900 | 0.445 / 0.416 |
+| 4B | 0.607 / 0.660 | - | 0.910 / 0.932 | 0.303 / 0.272 |
+| 8B | 0.700 / 0.738 | - | 0.954 / 0.976 | 0.254 / 0.238 |
+
+The looser threshold helps OCR+LLM slightly more (its names are more often trimmed), but the image method stays far
+ahead on every split and model size, so the conclusions do not depend on the threshold.
+
 ## 8. Limitations
 
 1. **Gemini pair not run yet**, so there is no result for a closed API model; findings apply to Qwen3-VL only.
 2. **No cost numbers yet.** Token counts are logged, but conversion to dollars (`cost.py`) is not done. Open-model cost will only be an estimate.
 3. **Speed is from one pass on one machine**, with OCR on CPU only (see section 5).
 4. **One run per configuration**, greedy decoding, no confidence intervals. Subtotal and tax rest on 41 to 93 receipts.
-5. **Item matching is strict** (exact qty and price, fuzzy name >= 80 provisional, one-to-one). One wrong digit counts as both a miss and a false positive. The 80 threshold was not tuned.
+5. **Item matching is strict** (exact qty and price, fuzzy name >= 80, one-to-one). One wrong digit counts as both a miss and a false positive. The 80 threshold was checked by hand on validation (7.1); the labels are one person's judgement, and at 80 some trimmed names still pass while some reordered names fail.
 6. **Merchant and date are not evaluated**, because CORD has no labels for them.
 7. **CORD only**: Indonesian receipts in one format family; results may not transfer to other countries or layouts.
 8. **Plain OCR+LLM uses naive text formatting** (one box per line). Method A shows this costs 10+ points on totals at

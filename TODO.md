@@ -12,6 +12,7 @@ Last updated: 2026-10-22. Results so far: `results/REPORT.md`. Session record: `
 - [x] OCR boxes saved (`cache/ocr_boxes/`); row grouping (`src/receipt/ocr/layout.py`)
 - [x] Method A (rows) on 2B, all splits + detailed report (`results/method_A_rows_report_2026-10-22_1733.md`)
 - [x] REPORT.md updated with Method A
+- [x] Name threshold 80 checked by hand on validation (strict and lenient labels); lenient check at 60 in both reports
 
 ## 1) Needs the lab GPU
 
