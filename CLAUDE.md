@@ -9,7 +9,7 @@ User uploads a receipt photo; system returns structured JSON (merchant, date, it
 ### Core experiment
 Compare two APPROACHES on the same receipts, keeping the MODEL fixed within each pair (only the input changes):
 - Gemini pair: OCR text -> Gemini Flash  vs  image -> Gemini Flash
-- Open pair: OCR text -> Qwen3-VL  vs  image -> Qwen3-VL (lab GPU; size TBD)
+- Open pair: OCR text -> Qwen3-VL  vs  image -> Qwen3-VL (lab GPU: NVIDIA RTX 4000 Ada, 20 GB VRAM; default Qwen/Qwen3-VL-4B-Instruct, 8B-Instruct optional via --model)
 
 The main result compares methods within each pair. Gemini vs Qwen is only a side note.
 
@@ -55,6 +55,20 @@ Live Azure demo: only PaddleOCR+Gemini and Gemini vision. Open models run only i
 `src/receipt/` (schema, normalize, cache, cost, ocr/, extractors/) · `data/scripts/` · `eval/` · `results/` · `app/` (api, ui) · `tests/` · `docker/` · `.github/workflows/`
 
 ## Status
-Done: folder structure, schema, normalize (+tests), CORD download/mapping, splits (val 100, test 100, train sample 150 with seed 42, degraded test 100), ground truth in `data/processed/`.
-CORD findings above were from 20 receipts; on the full splits total is present in 98/100 val and 95/100 test, subtotal 67/65, tax 47/41.
-Not started: metrics, OCR, extractors, cache, cost, eval runner, API, UI, Docker, CI.
+Repo: https://github.com/ksrinivasarao2012/Snap2JSON (branch main). The `.env` (GEMINI_API_KEY, GEMINI_MODEL) is never committed.
+
+Done and tested (fake backends only, 44 tests):
+- Data: CORD val 100, test 100, train sample 150 (seed 42), degraded test 100 (one effect per receipt: blur/rotate/darken/lowres by index % 4). Ground truth in `data/processed/*.jsonl`. Images are NOT in git: rebuild with `data/scripts/download_cord.py` (and `train`) and `degrade.py`.
+- Full-split label counts: total present 98/100 val, 95/100 test; subtotal 67/65; tax 47/41. Merchant/date never labelled (null, not scored).
+- OCR: PaddleOCR 3.x mobile models (PP-OCRv5 mobile det + en rec, mkldnn off) run on all 450 images; text committed in `cache/ocr/<id>.json` (with seconds). ~10 s/receipt on laptop CPU. Only a 10-receipt spot check against ground truth; no real OCR accuracy number yet.
+- `eval/metrics.py`: header exact match, item P/R/F1 (one-to-one, name fuzzy >= 80 AND qty/price equal), JSON-valid rate. The 80 threshold is PROVISIONAL: check on val only.
+- `src/receipt/extractors/`: shared prompt + parser (base.py), `OcrLlm` and `Vlm` work with any backend; backends `gemini.py` and `qwen.py`. Disk cache in `cache/`.
+- `eval/run_eval.py`: resumable runner -> `results/runs/*.jsonl` + `results/tables/*.json`.
+
+NOT verified: Gemini live calls (never succeeded; was blocked on .env/GEMINI_MODEL, and the free-tier limits are unchecked: read them in AI Studio) and the Qwen backend (never run; needs the lab GPU). Both may have bugs on first real run.
+
+Next steps:
+1. At the lab: clone, `uv pip install -e ".[dev,models]"`, download data, run `python eval/run_eval.py --backend qwen --method vlm|ocr_llm --split validation --limit 3`, fix any errors, then run all splits for both methods.
+2. Gemini pair on a few receipts per day (daily limits), cache makes reruns free.
+3. Tune prompt/threshold on val only; never on test.
+4. Still stubs: cost.py, tesseract.py, FastAPI app, Streamlit UI, logging_db, Dockerfile, CI workflow, analysis notebook, results tables/charts, README results.

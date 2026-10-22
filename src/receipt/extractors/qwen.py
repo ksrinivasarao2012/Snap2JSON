@@ -6,7 +6,7 @@ Not tested here: only the fake-backend tests run without a GPU.
 """
 import io
 
-DEFAULT_MODEL = "Qwen/Qwen3-VL-8B-Instruct"  # provisional; pass --model for another size
+DEFAULT_MODEL = "Qwen/Qwen3-VL-4B-Instruct"  # 8B (~18 GB weights) is tight on the 20 GB lab GPU; try via --model
 MAX_NEW_TOKENS = 1024
 
 
