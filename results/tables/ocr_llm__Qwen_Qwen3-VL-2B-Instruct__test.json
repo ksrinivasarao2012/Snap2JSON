@@ -19,6 +19,10 @@
  "median_seconds": 1.7565,
  "input_tokens_total": 27294,
  "output_tokens_total": 14701,
+ "ocr_timed_n": 100,
+ "mean_ocr_seconds": 2.41668,
+ "mean_end_to_end_seconds": 4.5251,
+ "median_end_to_end_seconds": 3.3745000000000003,
  "method": "ocr_llm",
  "model": "Qwen/Qwen3-VL-2B-Instruct",
  "split": "test"

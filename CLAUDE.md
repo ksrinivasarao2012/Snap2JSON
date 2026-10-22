@@ -67,12 +67,12 @@ Done and tested (fake backends only, 44 tests):
 
 Qwen pair DONE on the lab GPU (Linux, venv at `.venv`; needs `torchvision`): Qwen3-VL 2B, 4B and 8B (8B bf16 fits in 20 GB), both methods, all 4 splits = 24 runs, prompt never tuned. Write-up in `results/REPORT.md`. Test, total acc VLM vs OCR+LLM: 2B 0.832/0.579, 4B 0.853/0.516, 8B 0.926/0.768; item F1 2B 0.807/0.402, 4B 0.825/0.547, 8B 0.866/0.652. Correct total appears in the OCR text for 93% of test receipts, so the OCR+LLM loss looks like layout loss, not digit errors (hypothesis; failure cases not read yet).
 
-Known gap: OCR+LLM `seconds` is the model call only; OCR time is not included. Old OCR times are from the laptop CPU. `data/scripts/time_ocr.py` re-times OCR on the current machine into `cache/ocr_timing/` (never changes `cache/ocr/` text); PaddleOCR is not yet installed in the lab venv (`uv pip install -e ".[ocr]"`).
+Speed: OCR re-timed on the lab CPU (`data/scripts/time_ocr.py` -> `cache/ocr_timing/`, committed; same text as `cache/ocr/` on 450/450), ~2.4 s/receipt. OCR+LLM tables now have `mean_end_to_end_seconds` (OCR + model call); rebuild tables without a model via `run_eval.py --summarize-only`. Test end-to-end: VLM faster at every size (2B 2.52 vs 4.53 s, 4B 4.67 vs 6.46, 8B 7.91 vs 9.60). The old seconds in `cache/ocr/` are laptop times, not used.
 
 NOT verified: Gemini live calls (never succeeded; needs GEMINI_MODEL in .env; check free-tier limits in AI Studio).
 
 Next steps:
-1. Re-time OCR on the lab machine and add it to OCR+LLM seconds (end-to-end).
+1. Layout experiment (lab GPU): OCR text currently puts every box on its own line (`paddle.py`), so a row's name/qty/price get split. Re-run OCR saving boxes (new folder, keep `cache/ocr/`), group boxes into rows, run as a new method: A = rows, B = rows + x/y. Try 4B first.
 2. Read ~20 wrong OCR+LLM outputs to check the layout-loss hypothesis (and why 4B < 2B on total).
 3. Gemini pair on a few receipts per day (daily limits), cache makes reruns free.
 4. Tune prompt/threshold on val only; never on test.

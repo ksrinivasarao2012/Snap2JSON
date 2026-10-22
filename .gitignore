@@ -2,6 +2,7 @@
 !data/raw/.gitkeep
 cache/*
 !cache/ocr/
+!cache/ocr_timing/
 .env
 *.db
 __pycache__/

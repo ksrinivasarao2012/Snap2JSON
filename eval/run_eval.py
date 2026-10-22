@@ -24,6 +24,7 @@ sys.path[:0] = [str(ROOT / "src"), str(ROOT)]
 from eval.metrics import aggregate, score_receipt  # noqa: E402
 
 IMAGE_ROOT = ROOT / "data" / "raw" / "cord"
+OCR_TIMING = ROOT / "cache" / "ocr_timing"  # written by data/scripts/time_ocr.py
 
 
 def load_rows(split):
@@ -57,7 +58,18 @@ def run(extractor, rows, out_path, image_root=IMAGE_ROOT, max_consecutive_errors
     return out_path
 
 
-def summarize(out_path, rows):
+def load_ocr_seconds(ids, timing_dir=OCR_TIMING):
+    """{id: OCR seconds} for receipts re-timed by time_ocr.py (missing ones are left out)."""
+    out = {}
+    for i in ids:
+        p = Path(timing_dir) / f"{i}.json"
+        if p.exists():
+            out[i] = json.loads(p.read_text(encoding="utf-8"))["seconds"]
+    return out
+
+
+def summarize(out_path, rows, ocr_seconds=None):
+    """ocr_seconds ({id: s}, OCR+LLM only) adds end-to-end time = OCR + model call."""
     gt = {r["id"]: r["receipt"] for r in rows}
     outs = [json.loads(l) for l in open(out_path, encoding="utf-8")]
     outs = [o for o in outs if o["receipt_id"] in gt]
@@ -70,6 +82,15 @@ def summarize(out_path, rows):
         input_tokens_total=sum(o["input_tokens"] or 0 for o in outs),
         output_tokens_total=sum(o["output_tokens"] or 0 for o in outs),
     )
+    if ocr_seconds:
+        both = [(ocr_seconds[o["receipt_id"]], o["seconds"]) for o in outs if o["receipt_id"] in ocr_seconds]
+        if both:
+            summary.update(
+                ocr_timed_n=len(both),
+                mean_ocr_seconds=statistics.mean(a for a, _ in both),
+                mean_end_to_end_seconds=statistics.mean(a + b for a, b in both),
+                median_end_to_end_seconds=statistics.median(a + b for a, b in both),
+            )
     return summary
 
 
@@ -98,13 +119,25 @@ def main():
     p.add_argument("--split", default="validation", choices=["validation", "test", "train", "test_degraded"])
     p.add_argument("--model", default=None, help="model name (Qwen default is in qwen.py; Gemini uses GEMINI_MODEL)")
     p.add_argument("--limit", type=int, default=None, help="only the first N receipts")
+    p.add_argument("--summarize-only", action="store_true",
+                   help="rebuild the summary from the saved run without loading the model (needs --model for gemini)")
     a = p.parse_args()
 
     rows = load_rows(a.split)[: a.limit]
-    extractor, model = build_extractor(a.backend, a.method, a.model)
-    name = f"{a.method}__{model.replace('/', '_')}__{a.split}"
-    out = run(extractor, rows, ROOT / "results" / "runs" / f"{name}.jsonl")
-    summary = summarize(out, rows)
+    if a.summarize_only:
+        from receipt.extractors.qwen import DEFAULT_MODEL
+
+        model = a.model or (DEFAULT_MODEL if a.backend == "qwen" else None)
+        if not model:
+            p.error("--summarize-only with gemini needs --model")
+        out = ROOT / "results" / "runs" / f"{a.method}__{model.replace('/', '_')}__{a.split}.jsonl"
+    else:
+        extractor, model = build_extractor(a.backend, a.method, a.model)
+        name = f"{a.method}__{model.replace('/', '_')}__{a.split}"
+        out = run(extractor, rows, ROOT / "results" / "runs" / f"{name}.jsonl")
+    name = out.stem
+    ocr_seconds = load_ocr_seconds([r["id"] for r in rows]) if a.method == "ocr_llm" else None
+    summary = summarize(out, rows, ocr_seconds)
     summary.update(method=a.method, model=model, split=a.split)
     table = ROOT / "results" / "tables" / f"{name}.json"
     table.parent.mkdir(parents=True, exist_ok=True)

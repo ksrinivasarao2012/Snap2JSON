@@ -55,3 +55,12 @@ def test_stops_after_consecutive_failures(tmp_path):
     f = Fake(fail_ids={"r0", "r1", "r2"})
     run(f, ROWS, tmp_path / "o.jsonl", max_consecutive_errors=2, log=lambda *_: None)
     assert f.calls == ["r0", "r1"]
+
+
+def test_summarize_adds_ocr_time(tmp_path):
+    out = tmp_path / "o.jsonl"
+    run(Fake(), ROWS, out, log=lambda *_: None)
+    s = summarize(out, ROWS, {"r0": 10.0, "r1": 12.0})
+    assert s["ocr_timed_n"] == 2 and s["mean_ocr_seconds"] == 11.0
+    assert s["mean_end_to_end_seconds"] == 12.5 and s["mean_seconds"] == 1.5
+    assert "mean_ocr_seconds" not in summarize(out, ROWS)

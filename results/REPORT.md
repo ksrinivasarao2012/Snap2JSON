@@ -42,7 +42,7 @@ field are skipped for that field.
 - **Header fields** (total, subtotal, tax): exact match after number normalization.
 - **Items:** one-to-one matching; an item is correct if qty and price match exactly and the name is fuzzy-similar (rapidfuzz ratio >= 80, a provisional threshold). Reported as micro precision / recall / F1.
 - **JSON-valid rate:** output parses into our schema.
-- **Seconds per receipt:** model call time on the lab GPU (see caveat in section 5: OCR time is not included).
+- **Seconds per receipt:** end to end on the lab machine; for OCR+LLM this is OCR time + model call (section 5).
 
 ## 2. Main result: image beats OCR text at every model size
 
@@ -99,20 +99,23 @@ break results down per effect.
 
 ## 5. Speed and tokens
 
-Mean seconds per receipt for the model call on the lab GPU (test split):
+All timings on the lab machine: models on the GPU, PaddleOCR on the CPU (Intel Core Ultra 9 285, CPU Paddle build).
+OCR was re-timed on this machine (`data/scripts/time_ocr.py`, model loading excluded); it reproduced the cached OCR text
+exactly on all 450 receipts. Test split, mean seconds per receipt (median in brackets):
 
-| Model | OCR+LLM (text) | VLM (image) |
-|---|---|---|
-| 2B | 2.1 s | 2.5 s |
-| 4B | 4.0 s | 4.7 s |
-| 8B | 7.2 s | 7.9 s |
+| Model | OCR step | OCR+LLM model call | **OCR+LLM end-to-end** | **VLM end-to-end** |
+|---|---|---|---|---|
+| 2B | 2.42 | 2.11 | **4.53** (3.37) | **2.52** (2.07) |
+| 4B | 2.42 | 4.05 | **6.46** (5.14) | **4.67** (3.88) |
+| 8B | 2.42 | 7.18 | **9.60** (7.93) | **7.91** (6.54) |
 
-- The model call is only slightly slower with an image. Model size matters far more than input type: each step up roughly doubles time.
+- **End to end, the VLM is faster at every size** (by about 1.7 to 2 s per receipt), because it skips the OCR step. The
+  model call alone is only slightly slower with an image (+0.4 to +0.7 s).
+- Model size matters more than input type: each size step roughly doubles the model-call time.
 - Input tokens per receipt (test): about **1,349 with the image vs 273 with OCR text** (about 5x), identical across model sizes. Output is about 144 tokens per receipt for both.
-- **Caveat, important for the speed comparison:** the OCR+LLM numbers above exclude the OCR step. The stored OCR time was
-  about 10 to 14 s per receipt (test mean 14.4 s, validation 10.4 s) on a **laptop CPU**, a different machine from the GPU. So the
-  full OCR+LLM pipeline is *not* faster than the VLM here. Only the model-call part is similar. Timings on different hardware should not be added together as a final figure; a fair end-to-end number needs OCR run on the same machine.
-- Timings come from one pass; I have not repeated runs, so small differences (a few tenths of a second) are not meaningful.
+- OCR runs on CPU and the model on GPU. That is a realistic setup, but OCR on a GPU would be faster; not tested.
+- The earlier OCR times stored in `cache/ocr/` (10 to 14 s) were from a laptop CPU and are not used here.
+- Timings come from one pass; I have not repeated runs, so differences of a few tenths of a second are not meaningful.
 
 ## 6. Why does OCR+LLM do so much worse? (checked, with one correction)
 
@@ -152,7 +155,7 @@ splits just differ (and each has only 100 receipts).
 
 1. **Gemini pair not run yet**, so there is no result for a closed API model; findings apply to Qwen3-VL only.
 2. **No cost numbers yet.** Token counts are logged, but conversion to dollars (`cost.py`) is not done. Open-model cost will only be an estimate.
-3. **Speed comparison is incomplete** (OCR time excluded and measured on different hardware; see section 5).
+3. **Speed is from one pass on one machine**, with OCR on CPU only (see section 5).
 4. **One run per configuration**, greedy decoding, no confidence intervals. Subtotal and tax rest on 41 to 93 receipts.
 5. **Item matching is strict** (exact qty and price, fuzzy name >= 80 provisional, one-to-one). One wrong digit counts as both a miss and a false positive. The 80 threshold was not tuned.
 6. **Merchant and date are not evaluated**, because CORD has no labels for them.
@@ -164,13 +167,12 @@ splits just differ (and each has only 100 receipts).
 1. Read 20 wrong OCR+LLM outputs vs. ground truth to confirm the layout-loss explanation (and look at the 4B vs 2B oddity).
 2. Run the Gemini pair on a few receipts per day (cache makes reruns free) and add it to the same tables.
 3. Implement `cost.py` and add cost per receipt (API price from tokens; GPU-seconds estimate for Qwen, labelled as an estimate).
-4. Re-run OCR on the GPU machine (or time it consistently) so end-to-end OCR+LLM latency is fair.
-5. Optional: pass OCR text with line positions/columns preserved to see whether layout is what the text-only path is missing.
+4. Optional: pass OCR text with line positions/columns preserved to see whether layout is what the text-only path is missing.
 
 ## 10. Reproduce
 
 ```bash
-# data, once: python data/scripts/download_cord.py (and train), degrade.py, run_ocr.py
+# data, once: python data/scripts/download_cord.py (and train), degrade.py, run_ocr.py, time_ocr.py
 bash run_all_qwen.sh                                    # 4B (default)
 bash run_all_qwen.sh --model Qwen/Qwen3-VL-2B-Instruct
 bash run_all_qwen.sh --model Qwen/Qwen3-VL-8B-Instruct
