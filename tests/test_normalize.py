@@ -12,6 +12,12 @@ from receipt.normalize import parse_amount, parse_qty
     ("Rp 1.000", 1000.0),
     ("*110000", 110000.0),
     (45500, 45500.0),
+    ("Rp 58000.00", 58000.0),
+    ("9.500,00", 9500.0),
+    ("130.000,00", 130000.0),
+    ("47619.00", 47619.0),
+    ("Rp 5272.73", 5272.73),
+    ("1,234,567", 1234567.0),
 ])
 def test_parse_amount_values(raw, expected):
     assert parse_amount(raw) == expected

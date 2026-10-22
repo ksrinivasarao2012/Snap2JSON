@@ -50,6 +50,9 @@ Last updated: 2026-10-22. Results so far: `results/REPORT.md`. Session record: `
 - [ ] Azure Container Apps deploy (Gemini methods only)
 
 ### Write-up and housekeeping
+- [ ] **REPORT.md and the Method A report show pre-fix numbers.** On 2026-10-23 a ground-truth bug was fixed
+      (amounts like `Rp 58000.00` were read as 5,800,000; 2 val, 4 test, 8 train receipts) and all 28 tables were
+      re-scored from the saved runs (no model re-runs). Every score rose or stayed equal; update the report tables.
 - [ ] README: results section (currently "TBD") with a link to REPORT.md; Linux setup steps
 - [ ] `run_all_qwen.bat`: add the `METHODS` / `SPLITS` options that the `.sh` has
 - [ ] When the lab work is done: delete the GitHub token

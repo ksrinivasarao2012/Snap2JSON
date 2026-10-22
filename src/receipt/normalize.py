@@ -6,13 +6,22 @@ from typing import Optional
 def parse_amount(value) -> Optional[float]:
     """'16,500' / '23.000' / 'Rp 1.000' -> 16500.0 / 23000.0 / 1000.0.
 
-    CORD is Indonesian rupiah with no decimals, so every separator is a thousands separator.
+    Rupiah amounts normally have no decimals, so a separator followed by 3 digits is a thousands
+    separator. A separator followed by exactly 2 final digits is a decimal part
+    ('Rp 58000.00' -> 58000.0, '9.500,00' -> 9500.0, '5272.73' -> 5272.73).
     Returns None when there are no digits.
     """
     if value is None:
         return None
-    digits = re.sub(r"\D", "", str(value))
-    return float(digits) if digits else None
+    s = str(value).strip()
+    m = re.search(r"[.,](\d{2})$", s)
+    cents = m.group(1) if m else ""
+    if m:
+        s = s[: m.start()]
+    digits = re.sub(r"\D", "", s)
+    if not digits:
+        return None
+    return float(f"{digits}.{cents}") if cents else float(digits)
 
 
 def parse_qty(value) -> Optional[float]:
