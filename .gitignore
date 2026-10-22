@@ -10,3 +10,4 @@ __pycache__/
 .ipynb_checkpoints/
 cord_keys.txt
 cord_keys.txt
+results/*.log

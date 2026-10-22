@@ -63,12 +63,17 @@ Done and tested (fake backends only, 44 tests):
 - OCR: PaddleOCR 3.x mobile models (PP-OCRv5 mobile det + en rec, mkldnn off) run on all 450 images; text committed in `cache/ocr/<id>.json` (with seconds). ~10 s/receipt on laptop CPU. Only a 10-receipt spot check against ground truth; no real OCR accuracy number yet.
 - `eval/metrics.py`: header exact match, item P/R/F1 (one-to-one, name fuzzy >= 80 AND qty/price equal), JSON-valid rate. The 80 threshold is PROVISIONAL: check on val only.
 - `src/receipt/extractors/`: shared prompt + parser (base.py), `OcrLlm` and `Vlm` work with any backend; backends `gemini.py` and `qwen.py`. Disk cache in `cache/`.
-- `eval/run_eval.py`: resumable runner -> `results/runs/*.jsonl` + `results/tables/*.json`.
+- `eval/run_eval.py`: resumable runner -> `results/runs/*.jsonl` + `results/tables/*.json`. `run_all_qwen.sh` (lab, Linux) / `.bat` runs both methods on all 4 splits; extra args pass through (e.g. `--model`).
 
-NOT verified: Gemini live calls (never succeeded; was blocked on .env/GEMINI_MODEL, and the free-tier limits are unchecked: read them in AI Studio) and the Qwen backend (never run; needs the lab GPU). Both may have bugs on first real run.
+Qwen pair DONE on the lab GPU (Linux, venv at `.venv`; needs `torchvision`): Qwen3-VL 2B, 4B and 8B (8B bf16 fits in 20 GB), both methods, all 4 splits = 24 runs, prompt never tuned. Write-up in `results/REPORT.md`. Test, total acc VLM vs OCR+LLM: 2B 0.832/0.579, 4B 0.853/0.516, 8B 0.926/0.768; item F1 2B 0.807/0.402, 4B 0.825/0.547, 8B 0.866/0.652. Correct total appears in the OCR text for 93% of test receipts, so the OCR+LLM loss looks like layout loss, not digit errors (hypothesis; failure cases not read yet).
+
+Known gap: OCR+LLM `seconds` is the model call only; OCR time is not included. Old OCR times are from the laptop CPU. `data/scripts/time_ocr.py` re-times OCR on the current machine into `cache/ocr_timing/` (never changes `cache/ocr/` text); PaddleOCR is not yet installed in the lab venv (`uv pip install -e ".[ocr]"`).
+
+NOT verified: Gemini live calls (never succeeded; needs GEMINI_MODEL in .env; check free-tier limits in AI Studio).
 
 Next steps:
-1. At the lab: clone, `uv pip install -e ".[dev,models]"`, download data, run `python eval/run_eval.py --backend qwen --method vlm|ocr_llm --split validation --limit 3`, fix any errors, then run all splits for both methods.
-2. Gemini pair on a few receipts per day (daily limits), cache makes reruns free.
-3. Tune prompt/threshold on val only; never on test.
-4. Still stubs: cost.py, tesseract.py, FastAPI app, Streamlit UI, logging_db, Dockerfile, CI workflow, analysis notebook, results tables/charts, README results.
+1. Re-time OCR on the lab machine and add it to OCR+LLM seconds (end-to-end).
+2. Read ~20 wrong OCR+LLM outputs to check the layout-loss hypothesis (and why 4B < 2B on total).
+3. Gemini pair on a few receipts per day (daily limits), cache makes reruns free.
+4. Tune prompt/threshold on val only; never on test.
+5. Still stubs: cost.py, tesseract.py, FastAPI app, Streamlit UI, logging_db, Dockerfile, CI workflow, analysis notebook, charts, README results.
