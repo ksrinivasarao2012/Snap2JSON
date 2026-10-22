@@ -1,6 +1,17 @@
 # Snap2JSON — TODO
 
-Last updated: 2026-10-22. Results so far: `results/REPORT.md`. Session record: `results/experiment_log_2026-10-22_1732.md`.
+Last updated: 2026-10-23. Results so far: `results/REPORT.md`. Session record: `results/experiment_log_2026-10-22_1732.md`.
+
+## Priority order
+
+1. **Lab GPU session:** Method B on 2B, Method A on 4B and 8B (section 1); then compare and answer why 4B < 2B.
+2. **Gemini pair** (laptop): start early, because the free-tier daily limits spread it over several days.
+3. **`cost.py`:** cost per receipt is a required metric and still missing.
+4. *Optional:* **prompt-fix experiment** (section 1), as a separate experiment next to the untuned main result.
+5. **Write-up:** charts and the README results section.
+6. **Portfolio app:** FastAPI, Streamlit, Docker, CI, Azure (after the results are final).
+
+Lower priority: larger OCR detector, sub-item extraction (Option 2), LoRA.
 
 ## Done
 
@@ -23,6 +34,11 @@ Last updated: 2026-10-22. Results so far: `results/REPORT.md`. Session record: `
       `METHODS="ocr_llm_rows" bash run_all_qwen.sh` (4B default) and `... --model Qwen/Qwen3-VL-8B-Instruct`
       A 3-receipt 4B smoke test exists locally; it is a check, not a result.
 - [ ] **Method B on 4B and 8B**, only if B beats A on 2B.
+- [ ] *Optional:* **Prompt-fix experiment**, its own experiment. The failure audit (REPORT.md 7.2) found repeated
+      model mistakes: the service charge given as tax (9 of 100 audited errors), cash paid / change / voucher given
+      as total (7), names printed over two lines cut short or split (13). Add a few prompt rules (e.g. "total is the
+      amount due, not cash paid"; "tax is the PB1 / TAX line, not service"). Tune on **validation only**, then run
+      test once, for both methods with the same prompt. Report it next to the untuned main result, not instead of it.
 - [ ] **Sub-item extraction (Option 2)**, its own experiment: add sub-items (modifiers, CORD `menu.sub`) to the prompt
       and schema, check the prompt on validation, then re-run every method and model (about 4 h GPU for Qwen;
       Gemini too). Until then sub-items are ignored in scoring (Option 1, done 2026-10-23).
