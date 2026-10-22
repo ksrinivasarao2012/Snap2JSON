@@ -1,10 +1,11 @@
-﻿"""Run one method over one split, save per-receipt outputs, and write a scored summary.
+"""Run one method over one split, save per-receipt outputs, and write a scored summary.
 
 Usage (from the repo root):
   python eval/run_eval.py --backend qwen   --method vlm     --split validation --limit 3
   python eval/run_eval.py --backend qwen   --method ocr_llm --split test
   python eval/run_eval.py --backend gemini --method vlm     --split validation --limit 3
-Splits: validation, test, train, test_degraded. Method ocr_llm needs cache/ocr (run_ocr.py).
+Splits: validation, test, train, test_degraded. Method ocr_llm needs cache/ocr (run_ocr.py);
+ocr_llm_rows (layout A) and ocr_llm_boxes (layout B) need cache/ocr_boxes (run_ocr_boxes.py).
 
 Outputs: results/runs/<method>__<model>__<split>.jsonl (one line per receipt) and
 results/tables/<same name>.json (summary). Resumable: receipts already in the .jsonl are skipped,
@@ -109,13 +110,14 @@ def build_extractor(backend_name, method, model):
         return Vlm(backend), backend.model
     from receipt.extractors.ocr_llm import OcrLlm
 
-    return OcrLlm(backend), backend.model
+    layout = {"ocr_llm": "plain", "ocr_llm_rows": "rows", "ocr_llm_boxes": "boxes"}[method]
+    return OcrLlm(backend, layout=layout), backend.model
 
 
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--backend", choices=["gemini", "qwen"], required=True)
-    p.add_argument("--method", choices=["ocr_llm", "vlm"], required=True)
+    p.add_argument("--method", choices=["ocr_llm", "ocr_llm_rows", "ocr_llm_boxes", "vlm"], required=True)
     p.add_argument("--split", default="validation", choices=["validation", "test", "train", "test_degraded"])
     p.add_argument("--model", default=None, help="model name (Qwen default is in qwen.py; Gemini uses GEMINI_MODEL)")
     p.add_argument("--limit", type=int, default=None, help="only the first N receipts")
@@ -136,7 +138,7 @@ def main():
         name = f"{a.method}__{model.replace('/', '_')}__{a.split}"
         out = run(extractor, rows, ROOT / "results" / "runs" / f"{name}.jsonl")
     name = out.stem
-    ocr_seconds = load_ocr_seconds([r["id"] for r in rows]) if a.method == "ocr_llm" else None
+    ocr_seconds = load_ocr_seconds([r["id"] for r in rows]) if a.method.startswith("ocr_llm") else None
     summary = summarize(out, rows, ocr_seconds)
     summary.update(method=a.method, model=model, split=a.split)
     table = ROOT / "results" / "tables" / f"{name}.json"

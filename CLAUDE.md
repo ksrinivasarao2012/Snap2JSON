@@ -72,7 +72,7 @@ Speed: OCR re-timed on the lab CPU (`data/scripts/time_ocr.py` -> `cache/ocr_tim
 NOT verified: Gemini live calls (never succeeded; needs GEMINI_MODEL in .env; check free-tier limits in AI Studio).
 
 Next steps:
-1. Layout experiment (lab GPU): OCR text currently puts every box on its own line (`paddle.py`), so a row's name/qty/price get split. Re-run OCR saving boxes (new folder, keep `cache/ocr/`), group boxes into rows, run as a new method: A = rows, B = rows + x/y. Try 4B first.
+1. Layout experiment: `src/receipt/ocr/layout.py` groups OCR boxes (`cache/ocr_boxes/`, 450/450 reproduce `cache/ocr` text) into rows. Methods `ocr_llm_rows` (A) and `ocr_llm_boxes` (B, rows + x positions). DONE: A on 2B, all splits (`results/method_A_rows_report_2026-10-22_1733.md`): test total 0.579 -> 0.695, subtotal 0.754 -> 0.923, item F1 0.402 -> 0.449 (VLM 0.832 / 0.908 / 0.807). Items barely improve: 2B invents qty from price digits when qty is not in the text. TODO: B on 2B (`METHODS="ocr_llm_boxes" bash run_all_qwen.sh --model Qwen/Qwen3-VL-2B-Instruct`), then A/B on 4B and 8B; update REPORT.md (plain OCR+LLM numbers use naive formatting).
 2. Read ~20 wrong OCR+LLM outputs to check the layout-loss hypothesis (and why 4B < 2B on total).
 3. Gemini pair on a few receipts per day (daily limits), cache makes reruns free.
 4. Tune prompt/threshold on val only; never on test.

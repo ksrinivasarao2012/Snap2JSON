@@ -79,3 +79,21 @@ def test_vlm(tmp_path):
 
 def test_parse_output_strips_code_fence():
     assert parse_output("```json\n" + GOOD + "\n```")[1] is True
+
+
+def test_ocr_llm_rows_layout_sends_rows(tmp_path):
+    d = tmp_path / "boxes"
+    d.mkdir()
+    boxes = [{"text": "TEA", "box": [0, 0, 30, 20], "score": 1.0},
+             {"text": "1.000", "box": [100, 2, 150, 22], "score": 1.0}]
+    (d / "r1.json").write_text(json.dumps({"id": "r1", "boxes": boxes}))
+    sent = []
+
+    class Spy(FakeBackend):
+        def generate(self, prompt, text=None, image_png=None):
+            sent.append(text)
+            return super().generate(prompt, text, image_png)
+
+    ex = OcrLlm(Spy(), DiskCache("t", root=tmp_path), layout="rows", boxes_dir=d)
+    assert ex.extract("r1").json_valid and ex.name == "ocr_rows+fake-model"
+    assert sent[0].split() == ["TEA", "1.000"] and "\n" not in sent[0]
