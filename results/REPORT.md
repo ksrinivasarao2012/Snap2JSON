@@ -4,10 +4,14 @@ All numbers below come from real runs saved in `results/tables/*.json` and `resu
 (24 main runs: 3 model sizes x 2 methods x 4 splits, 450 receipts each; plus 4 runs of the OCR row-layout
 experiment, Method A, on 2B). Nothing is estimated except where marked.
 
+**Corrected 2026-10-23:** a ground-truth bug read amounts like `Rp 58000.00` as 5,800,000 (2 validation, 4 test,
+8 train receipts). It was fixed and every table was re-scored from the saved model outputs; no model was re-run.
+All scores rose or stayed equal, and no conclusion about image vs text changed. All numbers below are the corrected ones.
+
 **Key update (section 6):** the OCR text in the main runs put every OCR box on its own line, which splits printed rows.
-Keeping rows together (Method A) raises 2B OCR+LLM test total accuracy from 0.579 to 0.695 and subtotal from 0.754 to
-0.923. So the main OCR+LLM numbers come from naive text formatting and **understate** the OCR approach. The image
-method still wins on every field.
+Keeping rows together (Method A) raises 2B OCR+LLM test total accuracy from 0.600 to 0.737 and subtotal from 0.769 to
+0.954. So the main OCR+LLM numbers come from naive text formatting and **understate** the OCR approach. The image
+method still wins on every field except subtotal, where 2B rows (0.954) edges out the 2B VLM (0.923) on test.
 
 **Scope of this report:** the open-model (Qwen3-VL) pair only. The Gemini pair has not been run, and
 cost per receipt has not been computed yet (`cost.py` is a stub).
@@ -57,34 +61,34 @@ Test split (100 receipts). "Total" = total exact-match accuracy over the 95 labe
 
 | Model | Method | Total acc | Subtotal acc (n=65) | Tax acc (n=41) | Item F1 | Item P | Item R | JSON valid |
 |---|---|---|---|---|---|---|---|---|
-| 2B | OCR+LLM | 0.579 | 0.754 | 0.610 | 0.402 | 0.395 | 0.410 | 1.00 |
-| 2B | **VLM** | **0.832** | 0.908 | 0.780 | 0.807 | 0.776 | 0.841 | 1.00 |
-| 4B | OCR+LLM | 0.516 | 0.600 | 0.512 | 0.547 | 0.543 | 0.550 | 1.00 |
-| 4B | **VLM** | **0.853** | 0.923 | 0.780 | 0.825 | 0.796 | 0.857 | 1.00 |
-| 8B | OCR+LLM | 0.768 | 0.800 | 0.610 | 0.652 | 0.636 | 0.669 | 1.00 |
-| 8B | **VLM** | **0.926** | 0.954 | 0.854 | 0.866 | 0.832 | 0.904 | 1.00 |
+| 2B | OCR+LLM | 0.600 | 0.769 | 0.634 | 0.422 | 0.414 | 0.430 | 1.00 |
+| 2B | **VLM** | **0.863** | 0.923 | 0.805 | 0.853 | 0.820 | 0.888 | 1.00 |
+| 4B | OCR+LLM | 0.558 | 0.631 | 0.537 | 0.590 | 0.587 | 0.594 | 1.00 |
+| 4B | **VLM** | **0.895** | 0.954 | 0.805 | 0.875 | 0.844 | 0.908 | 1.00 |
+| 8B | OCR+LLM | 0.811 | 0.831 | 0.634 | 0.680 | 0.663 | 0.697 | 1.00 |
+| 8B | **VLM** | **0.968** | 0.985 | 0.878 | 0.916 | 0.879 | 0.956 | 1.00 |
 
 Gap (VLM minus OCR+LLM) on test:
 
 | Model | Total acc | Item F1 |
 |---|---|---|
-| 2B | +25.3 pts | +40.5 pts |
-| 4B | +33.7 pts | +27.8 pts |
-| 8B | +15.8 pts | +21.4 pts |
+| 2B | +26.3 pts | +43.1 pts |
+| 4B | +33.7 pts | +28.5 pts |
+| 8B | +15.8 pts | +23.6 pts |
 
 OCR+LLM here is the plain format (one OCR box per line). With rows (Method A, 2B only so far) the 2B gap shrinks to
-+13.7 pts on total and +35.8 pts on item F1 (section 6).
++12.6 pts on total and +36.8 pts on item F1 (section 6).
 
 The same direction holds on validation, train and degraded (full tables in section 7). Even the smallest VLM (2B, image)
-beats the largest OCR+LLM (8B, text) on item F1 (0.807 vs 0.652) and is close on total accuracy (0.832 vs 0.768).
+beats the largest OCR+LLM (8B, text) on item F1 (0.853 vs 0.680) and on total accuracy (0.863 vs 0.811).
 
 ## 3. Does the model size matter?
 
-Test split, VLM method: total acc 0.832 (2B) -> 0.853 (4B) -> 0.926 (8B); item F1 0.807 -> 0.825 -> 0.866.
+Test split, VLM method: total acc 0.863 (2B) -> 0.895 (4B) -> 0.968 (8B); item F1 0.853 -> 0.875 -> 0.916.
 Going 2B -> 4B gives a small gain; 4B -> 8B gives the larger one.
 
-For OCR+LLM the pattern is **not monotonic**: on test, 4B has lower total accuracy than 2B (0.516 vs 0.579) but higher
-item F1 (0.547 vs 0.402). I did not investigate why (it may be how each model handles the unstructured text, or noise), so
+For OCR+LLM the pattern is **not monotonic**: on test, 4B has lower total accuracy than 2B (0.558 vs 0.600) but higher
+item F1 (0.590 vs 0.422). I did not investigate why (it may be how each model handles the unstructured text, or noise), so
 this should not be read as a real effect of size.
 
 Sample sizes are small (test: 95 totals, 65 subtotals, 41 taxes), so a difference of a few points on a single split,
@@ -96,15 +100,15 @@ Same 100 test receipts with one effect each. Drop from test to degraded:
 
 | Model | Method | Total acc | Item F1 |
 |---|---|---|---|
-| 2B | VLM | 0.832 -> 0.768 (-6.4) | 0.807 -> 0.629 |
-| 4B | VLM | 0.853 -> 0.737 (-11.6) | 0.825 -> 0.711 |
-| 8B | VLM | 0.926 -> 0.832 (-9.4) | 0.866 -> 0.781 |
-| 2B | OCR+LLM | 0.579 -> 0.474 (-10.5) | 0.402 -> 0.259 |
-| 4B | OCR+LLM | 0.516 -> 0.368 (-14.8) | 0.547 -> 0.290 |
-| 8B | OCR+LLM | 0.768 -> 0.568 (-20.0) | 0.652 -> 0.377 |
+| 2B | VLM | 0.863 -> 0.789 (-7.4) | 0.853 -> 0.663 |
+| 4B | VLM | 0.895 -> 0.768 (-12.6) | 0.875 -> 0.758 |
+| 8B | VLM | 0.968 -> 0.863 (-10.5) | 0.916 -> 0.828 |
+| 2B | OCR+LLM | 0.600 -> 0.484 (-11.6) | 0.422 -> 0.263 |
+| 4B | OCR+LLM | 0.558 -> 0.400 (-15.8) | 0.590 -> 0.318 |
+| 8B | OCR+LLM | 0.811 -> 0.600 (-21.1) | 0.680 -> 0.385 |
 
-Both methods get worse, and OCR+LLM falls further at 4B and 8B. The 2B VLM is the exception for total accuracy:
-it dropped least (-6.4) although its item F1 dropped by about the same as the others. The degraded set is only 100 receipts with 22–25 scored per effect; a per-effect
+Both methods get worse, and OCR+LLM falls further at every size. The 2B VLM is the exception for total accuracy:
+it dropped least (-7.4) although its item F1 dropped by about the same as the others. The degraded set is only 100 receipts with 22–25 scored per effect; a per-effect
 breakdown for 2B (plain, rows, VLM) is in section 6.5, and differences of 1–3 receipts there are noise.
 
 ## 5. Speed and tokens
@@ -138,11 +142,11 @@ text? (A loose upper bound; the number could appear for another reason.)
 |---|---|---|
 | validation | 96 / 98 (98%) | 98% |
 | test | 88 / 95 (93%) | 96% |
-| train | 141 / 148 (95%) | 97% |
-| test_degraded | 76 / 95 (80%) | 75% |
+| train | 142 / 148 (96%) | 98% |
+| test_degraded | 76 / 95 (80%) | 76% |
 
 On clean receipts OCR usually captures the right number (93% on test). Yet plain OCR+LLM total accuracy is only
-52% to 77% on test. So on clean receipts the main loss is **not** OCR misreading digits.
+56% to 81% on test. So on clean receipts the main loss is **not** OCR misreading digits.
 
 ### 6.2 The text format split printed rows
 
@@ -178,44 +182,45 @@ TOTAL ...
 
 | Split | Method | Total acc | Subtotal acc | Tax acc | Item F1 | JSON valid | End-to-end s |
 |---|---|---|---|---|---|---|---|
-| validation | Plain | 0.684 | 0.776 | 0.511 | 0.471 | 0.99 | 4.31 |
-| validation | **A: rows** | **0.796** | **0.955** | **0.617** | **0.505** | 1.00 | 4.36 |
-| validation | VLM | 0.918 | 0.970 | 0.766 | 0.807 | 1.00 | 2.44 |
-| test | Plain | 0.579 | 0.754 | 0.610 | 0.402 | 1.00 | 4.53 |
-| test | **A: rows** | **0.695** | **0.923** | **0.683** | **0.449** | 1.00 | 4.56 |
-| test | VLM | 0.832 | 0.908 | 0.780 | 0.807 | 1.00 | 2.52 |
-| train | Plain | 0.561 | 0.710 | 0.600 | 0.424 | 0.993 | 4.33 |
-| train | **A: rows** | **0.662** | **0.817** | **0.673** | **0.507** | 0.987 | 4.47 |
-| train | VLM | 0.818 | 0.903 | 0.800 | 0.787 | 1.00 | 2.42 |
-| test_degraded | Plain | 0.474 | 0.415 | 0.317 | 0.259 | 0.99 | 4.38 |
-| test_degraded | **A: rows** | **0.526** | **0.554** | **0.341** | **0.323** | 0.99 | 4.38 |
-| test_degraded | VLM | 0.768 | 0.800 | 0.585 | 0.629 | 1.00 | 2.61 |
+| validation | Plain | 0.684 | 0.791 | 0.532 | 0.471 | 0.99 | 4.31 |
+| validation | **A: rows** | **0.816** | **0.970** | **0.638** | **0.505** | 1.00 | 4.36 |
+| validation | VLM | 0.939 | 0.985 | 0.787 | 0.811 | 1.00 | 2.44 |
+| test | Plain | 0.600 | 0.769 | 0.634 | 0.422 | 1.00 | 4.53 |
+| test | **A: rows** | **0.737** | **0.954** | **0.707** | **0.485** | 1.00 | 4.56 |
+| test | VLM | 0.863 | 0.923 | 0.805 | 0.853 | 1.00 | 2.52 |
+| train | Plain | 0.595 | 0.731 | 0.618 | 0.435 | 0.993 | 4.33 |
+| train | **A: rows** | **0.696** | **0.849** | **0.709** | **0.520** | 0.987 | 4.47 |
+| train | VLM | 0.872 | 0.935 | 0.836 | 0.810 | 1.00 | 2.42 |
+| test_degraded | Plain | 0.484 | 0.431 | 0.341 | 0.263 | 0.99 | 4.38 |
+| test_degraded | **A: rows** | **0.547** | **0.569** | **0.366** | **0.331** | 0.99 | 4.38 |
+| test_degraded | VLM | 0.789 | 0.815 | 0.610 | 0.663 | 1.00 | 2.61 |
 
 - **Rows improve every field on every split.** Gains over plain:
-  - total: +5 to +12 pts
-  - subtotal: +11 to +18 pts
+  - total: +6 to +14 pts
+  - subtotal: +12 to +19 pts
   - tax: +2 to +11 pts
-  - item F1: +3 to +8 pts
-- **More fixed than broken.** Receipt by receipt, over all splits, A fixed 61 totals that plain got wrong and broke 19.
+  - item F1: +3 to +9 pts
+- **More fixed than broken.** Receipt by receipt, over all splits, A fixed 67 totals that plain got wrong and broke 20.
 - **Share of the test gap to the VLM that A closes:**
-  - total: ~46%
-  - subtotal: all of it (0.923 vs VLM 0.908)
+  - total: ~52%
+  - subtotal: all of it (0.954 vs VLM 0.923)
   - tax: ~43%
-  - item F1: only ~12%
+  - item F1: only ~15%
 - **Almost free.** Input tokens rise about 4% (test 284 vs 273 per receipt), and speed is unchanged.
 
 ### 6.5 What layout does not fix
 
 **Quantities.** For each test ground-truth item, I took the predicted item with the closest name and sorted the result.
-This is a first-match diagnostic, not the official metric.
+This is a first-match diagnostic, not the official metric. (Recomputed after the ground-truth fix; the tie rule may
+differ from the first version by 1–2 items per cell.)
 
 | Outcome (test, 251 items) | Plain | A: rows | VLM |
 |---|---|---|---|
-| Matched | 104 | 113 | 212 |
+| Matched | 110 | 122 | 223 |
 | No predicted item with a similar name | 65 | **44** | 10 |
-| Name OK, quantity wrong (price OK) | 27 | **44** | 1 |
-| Name OK, price wrong | 41 | 39 | 28 |
-| Name OK, quantity and price wrong | 14 | 11 | 0 |
+| Name OK, quantity wrong (price OK) | 28 | **44** | 1 |
+| Name OK, price wrong | 35 | 28 | 16 |
+| Name OK, quantity and price wrong | 13 | 13 | 1 |
 
 - **Rows recover item names, but many of those items then fail on quantity.**
 - **In 27 of the 44 quantity errors, the quantity is not in the item's OCR row at all.** Either it isn't printed (CORD
@@ -232,19 +237,20 @@ box for that `2`. No text format can recover a missed box; only the image method
 | Effect | Plain | A: rows | VLM |
 |---|---|---|---|
 | blur | 9/24 | 11/24 | 18/24 |
-| rotate | 9/22 | 8/22 | 16/22 |
+| rotate | 10/22 | 8/22 | 17/22 |
 | darken | 18/25 | 21/25 | 24/25 |
-| lowres | 9/24 | 10/24 | 15/24 |
+| lowres | 9/24 | 12/24 | 16/24 |
 
 - **Rotation is the one effect where rows don't help.** Tilted lines are the known weak spot of the row rule.
-- **Blur and low-res lose the text in OCR itself.**
+- **Blur and low-res gain only 2–3 receipts with rows;** the text is lost in OCR itself.
 
 ### 6.6 Conclusion
 
 - **Text arrangement explains a large part of the header-field gap** between OCR+LLM and the VLM.
 - **It explains only a small part of the item gap.** That gap comes mostly from information missing from the OCR
   text (quantities, missed boxes), which the small model then guesses.
-- **The image method is still best on every field and split, and faster end to end.**
+- **The image method is still best on every field and split, except subtotal on test (rows 0.954 vs VLM 0.923),
+  and it is faster end to end.**
 
 Full analysis: `results/method_A_rows_report_2026-10-22_1733.md`. Not yet run:
 - Method B (rows + x positions)
@@ -259,13 +265,13 @@ Total acc / Item F1. "OCR+LLM" is the plain format; "OCR+LLM rows" is Method A. 
 
 | Model | Method | validation | test | train | test_degraded |
 |---|---|---|---|---|---|
-| 2B | OCR+LLM | 0.684 / 0.471 | 0.579 / 0.402 | 0.561 / 0.424 | 0.474 / 0.259 |
-| 2B | OCR+LLM rows | 0.796 / 0.505 | 0.695 / 0.449 | 0.662 / 0.507 | 0.526 / 0.323 |
-| 2B | VLM | 0.918 / 0.807 | 0.832 / 0.807 | 0.818 / 0.787 | 0.768 / 0.629 |
-| 4B | OCR+LLM | 0.541 / 0.493 | 0.516 / 0.547 | 0.493 / 0.534 | 0.368 / 0.290 |
-| 4B | VLM | 0.888 / 0.783 | 0.853 / 0.825 | 0.804 / 0.796 | 0.737 / 0.711 |
-| 8B | OCR+LLM | 0.827 / 0.607 | 0.768 / 0.652 | 0.730 / 0.625 | 0.568 / 0.377 |
-| 8B | VLM | 0.959 / 0.846 | 0.926 / 0.866 | 0.912 / 0.845 | 0.832 / 0.781 |
+| 2B | OCR+LLM | 0.684 / 0.471 | 0.600 / 0.422 | 0.595 / 0.435 | 0.484 / 0.263 |
+| 2B | OCR+LLM rows | 0.816 / 0.505 | 0.737 / 0.485 | 0.696 / 0.520 | 0.547 / 0.331 |
+| 2B | VLM | 0.939 / 0.811 | 0.863 / 0.853 | 0.872 / 0.810 | 0.789 / 0.663 |
+| 4B | OCR+LLM | 0.561 / 0.493 | 0.558 / 0.590 | 0.534 / 0.547 | 0.400 / 0.318 |
+| 4B | VLM | 0.908 / 0.787 | 0.895 / 0.875 | 0.858 / 0.816 | 0.768 / 0.758 |
+| 8B | OCR+LLM | 0.847 / 0.607 | 0.811 / 0.680 | 0.784 / 0.630 | 0.600 / 0.385 |
+| 8B | VLM | 0.980 / 0.854 | 0.968 / 0.916 | 0.966 / 0.868 | 0.863 / 0.828 |
 
 Validation scores are higher than test for most rows. Validation was not used for tuning, so this is not leakage; the
 splits just differ (and each has only 100 receipts).
