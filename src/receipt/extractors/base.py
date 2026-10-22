@@ -47,7 +47,10 @@ class Extractor(ABC):
 
 def parse_output(raw_text: str):
     """Return (receipt dict, True) if raw_text is valid JSON matching our schema, else (None, False)."""
+    text = raw_text.strip()
+    if text.startswith("```"):  # open models often wrap JSON in a code fence
+        text = text.strip("`").removeprefix("json").strip()
     try:
-        return Receipt.model_validate(json.loads(raw_text)).model_dump(), True
+        return Receipt.model_validate(json.loads(text)).model_dump(), True
     except (ValueError, ValidationError):  # json.JSONDecodeError is a ValueError
         return None, False

@@ -1,6 +1,7 @@
 ﻿data/raw/*
 !data/raw/.gitkeep
-cache/
+cache/*
+!cache/ocr/
 .env
 *.db
 __pycache__/

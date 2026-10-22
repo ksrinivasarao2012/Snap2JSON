@@ -5,8 +5,8 @@ from PIL import Image
 
 from receipt.cache import DiskCache
 from receipt.extractors.base import parse_output
-from receipt.extractors.ocr_llm import GeminiOcrLlm
-from receipt.extractors.vlm import GeminiVlm
+from receipt.extractors.ocr_llm import OcrLlm
+from receipt.extractors.vlm import Vlm
 
 GOOD = json.dumps({"merchant": None, "date": None, "subtotal": None, "tax": None, "total": 1000,
                    "items": [{"name": "TEA", "qty": 1, "price": 1000}]})
@@ -40,7 +40,7 @@ def test_parse_output():
 
 def test_ocr_llm_and_cache(tmp_path):
     backend = FakeBackend()
-    ex = GeminiOcrLlm(backend, DiskCache("t", root=tmp_path), make_ocr_dir(tmp_path))
+    ex = OcrLlm(backend, DiskCache("t", root=tmp_path), make_ocr_dir(tmp_path))
     r1 = ex.extract("r1")
     r2 = ex.extract("r1")
     assert r1.json_valid and r1.receipt["total"] == 1000 and not r1.cached
@@ -49,21 +49,21 @@ def test_ocr_llm_and_cache(tmp_path):
 
 
 def test_failed_call_not_cached(tmp_path):
-    ex = GeminiOcrLlm(FakeBackend(fail=True), DiskCache("t", root=tmp_path), make_ocr_dir(tmp_path))
+    ex = OcrLlm(FakeBackend(fail=True), DiskCache("t", root=tmp_path), make_ocr_dir(tmp_path))
     r = ex.extract("r1")
     assert r.error and not r.json_valid
-    ok = GeminiOcrLlm(FakeBackend(), DiskCache("t", root=tmp_path), make_ocr_dir(tmp_path)).extract("r1")
+    ok = OcrLlm(FakeBackend(), DiskCache("t", root=tmp_path), make_ocr_dir(tmp_path)).extract("r1")
     assert ok.json_valid and not ok.cached
 
 
 def test_invalid_json_is_reported(tmp_path):
-    ex = GeminiOcrLlm(FakeBackend(text="sorry"), DiskCache("t", root=tmp_path), make_ocr_dir(tmp_path))
+    ex = OcrLlm(FakeBackend(text="sorry"), DiskCache("t", root=tmp_path), make_ocr_dir(tmp_path))
     r = ex.extract("r1")
     assert r.json_valid is False and r.receipt is None and r.error is None
 
 
 def test_missing_ocr_file(tmp_path):
-    ex = GeminiOcrLlm(FakeBackend(), DiskCache("t", root=tmp_path), tmp_path)
+    ex = OcrLlm(FakeBackend(), DiskCache("t", root=tmp_path), tmp_path)
     assert "FileNotFoundError" in ex.extract("nope").error
 
 
@@ -71,7 +71,11 @@ def test_vlm(tmp_path):
     img = tmp_path / "a.png"
     Image.new("RGB", (50, 80), "white").save(img)
     backend = FakeBackend()
-    ex = GeminiVlm(backend, DiskCache("v", root=tmp_path))
+    ex = Vlm(backend, DiskCache("v", root=tmp_path))
     assert ex.extract("r1", img).json_valid
     assert ex.extract("r1", img).cached
     assert backend.calls == 1
+
+
+def test_parse_output_strips_code_fence():
+    assert parse_output("```json\n" + GOOD + "\n```")[1] is True

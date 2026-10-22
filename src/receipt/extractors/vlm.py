@@ -1,4 +1,4 @@
-﻿"""Image -> model extractor (Gemini vision)."""
+﻿"""Image -> model extractor (any backend)."""
 import time
 
 from receipt.cache import DiskCache, make_key
@@ -6,10 +6,10 @@ from receipt.extractors.base import PROMPT, ExtractionResult, Extractor, parse_o
 from receipt.extractors.gemini import prepare_image
 
 
-class GeminiVlm(Extractor):
+class Vlm(Extractor):
     def __init__(self, backend, cache: DiskCache = None):
         self.backend = backend
-        self.cache = cache or DiskCache("gemini_vlm")
+        self.cache = cache or DiskCache("vlm")
         self.name = f"image+{backend.model}"
 
     def extract(self, receipt_id, image_path) -> ExtractionResult:

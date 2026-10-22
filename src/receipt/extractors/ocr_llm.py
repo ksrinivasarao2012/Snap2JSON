@@ -1,4 +1,4 @@
-﻿"""OCR text -> model extractor (Gemini). Reads the OCR text saved by data/scripts/run_ocr.py."""
+﻿"""OCR text -> model extractor (any backend). Reads the OCR text saved by data/scripts/run_ocr.py."""
 import json
 import time
 from pathlib import Path
@@ -11,10 +11,10 @@ def load_ocr_text(receipt_id: str, ocr_dir: Path = CACHE_DIR / "ocr") -> str:
     return json.loads((Path(ocr_dir) / f"{receipt_id}.json").read_text(encoding="utf-8"))["text"]
 
 
-class GeminiOcrLlm(Extractor):
+class OcrLlm(Extractor):
     def __init__(self, backend, cache: DiskCache = None, ocr_dir: Path = CACHE_DIR / "ocr"):
         self.backend = backend
-        self.cache = cache or DiskCache("gemini_ocr")
+        self.cache = cache or DiskCache("ocr_llm")
         self.ocr_dir = ocr_dir
         self.name = f"ocr+{backend.model}"
 

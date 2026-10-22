@@ -19,7 +19,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest"]
 ocr = ["paddleocr>=3", "paddlepaddle>=3", "pytesseract", "setuptools"]
-models = ["torch", "transformers", "google-genai"]
+models = ["torch", "transformers", "accelerate", "google-genai"]
 app = ["fastapi", "uvicorn", "streamlit", "python-multipart"]
 
 [tool.setuptools.packages.find]
