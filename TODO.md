@@ -21,8 +21,11 @@ Last updated: 2026-10-22. Results so far: `results/REPORT.md`. Session record: `
       `METHODS="ocr_llm_rows" bash run_all_qwen.sh` (4B default) and `... --model Qwen/Qwen3-VL-8B-Instruct`
       A 3-receipt 4B smoke test exists locally; it is a check, not a result.
 - [ ] **Method B on 4B and 8B**, only if B beats A on 2B.
-- [ ] *Optional, validation only:* prompt rule for missing quantities, since 2B invents qty from price digits. If adopted,
-      re-run **every** method with the new prompt so the comparison stays fair.
+- [ ] **Sub-item extraction (Option 2)**, its own experiment: add sub-items (modifiers, CORD `menu.sub`) to the prompt
+      and schema, check the prompt on validation, then re-run every method and model (about 4 h GPU for Qwen;
+      Gemini too). Until then sub-items are ignored in scoring (Option 1, done 2026-10-23).
+- [ ] **Larger OCR text detector** (e.g. PP-OCRv5 server det) for lone quantity digits, validation only
+      (`data/scripts/compare_ocr.py`; thresholds, box margin and upscaling did not fix it).
 - [ ] *Optional, later:* LoRA fine-tune on CORD train (excluding the 150 sampled receipts).
 
 ## 2) No GPU needed (laptop is fine)

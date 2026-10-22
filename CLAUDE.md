@@ -70,6 +70,9 @@ Qwen pair DONE on the lab GPU (Linux, venv at `.venv`; needs `torchvision`): Qwe
 Speed: OCR re-timed on the lab CPU (`data/scripts/time_ocr.py` -> `cache/ocr_timing/`, committed; same text as `cache/ocr/` on 450/450), ~2.4 s/receipt. OCR+LLM tables now have `mean_end_to_end_seconds` (OCR + model call); rebuild tables without a model via `run_eval.py --summarize-only`. Test end-to-end: VLM faster at every size (2B 2.52 vs 4.53 s, 4B 4.67 vs 6.46, 8B 7.91 vs 9.60). The old seconds in `cache/ocr/` are laptop times, not used.
 
 Ground-truth fix (2026-10-23): `parse_amount` now treats a final 2-digit part as decimals (`Rp 58000.00` -> 58000, was 5,800,000). data/processed regenerated (2 val, 4 test, 8 train receipts changed) and all results/tables re-scored from saved runs. REPORT.md and the Method A report are updated to the corrected numbers; the experiment log keeps the pre-fix ones as a dated record.
+Scoring (2026-10-23): predicted items matching a receipt's sub-item lines (`sub_items` in data/processed, from CORD
+menu.sub) are ignored in precision. `parse_amount` keeps minus signs. CORD labels quantity only when printed
+(767/767 checked via `data/scripts/extract_cord_lines.py`), so quantity errors are real.
 
 NOT verified: Gemini live calls (never succeeded; needs GEMINI_MODEL in .env; check free-tier limits in AI Studio).
 
