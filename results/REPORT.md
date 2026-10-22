@@ -1,7 +1,13 @@
 # Snap2JSON: OCR+LLM vs VLM on CORD receipts (Qwen3-VL 2B / 4B / 8B)
 
 All numbers below come from real runs saved in `results/tables/*.json` and `results/runs/*.jsonl`
-(24 runs: 3 model sizes x 2 methods x 4 splits, 450 receipts each). Nothing is estimated except where marked.
+(24 main runs: 3 model sizes x 2 methods x 4 splits, 450 receipts each; plus 4 runs of the OCR row-layout
+experiment, Method A, on 2B). Nothing is estimated except where marked.
+
+**Key update (section 6):** the OCR text in the main runs put every OCR box on its own line, which splits printed rows.
+Keeping rows together (Method A) raises 2B OCR+LLM test total accuracy from 0.579 to 0.695 and subtotal from 0.754 to
+0.923. So the main OCR+LLM numbers come from naive text formatting and **understate** the OCR approach. The image
+method still wins on every field.
 
 **Scope of this report:** the open-model (Qwen3-VL) pair only. The Gemini pair has not been run, and
 cost per receipt has not been computed yet (`cost.py` is a stub).
@@ -15,7 +21,8 @@ The model is held fixed inside each pair, so only the input changes:
 
 | Method | Input to the model | Model |
 |---|---|---|
-| OCR+LLM | PaddleOCR text only (no image) | Qwen3-VL-{2B,4B,8B}-Instruct |
+| OCR+LLM | PaddleOCR text only (no image), one OCR box per line ("plain") | Qwen3-VL-{2B,4B,8B}-Instruct |
+| OCR+LLM, Method A | the same OCR text with boxes grouped into printed rows (section 6) | Qwen3-VL-2B-Instruct so far |
 | VLM | the receipt image | the same Qwen3-VL model |
 
 - Same prompt for every run (`src/receipt/extractors/base.py`). Greedy decoding (no sampling), so runs are repeatable.
@@ -65,6 +72,9 @@ Gap (VLM minus OCR+LLM) on test:
 | 4B | +33.7 pts | +27.8 pts |
 | 8B | +15.8 pts | +21.4 pts |
 
+OCR+LLM here is the plain format (one OCR box per line). With rows (Method A, 2B only so far) the 2B gap shrinks to
++13.7 pts on total and +35.8 pts on item F1 (section 6).
+
 The same direction holds on validation, train and degraded (full tables in section 7). Even the smallest VLM (2B, image)
 beats the largest OCR+LLM (8B, text) on item F1 (0.807 vs 0.652) and is close on total accuracy (0.832 vs 0.768).
 
@@ -94,8 +104,8 @@ Same 100 test receipts with one effect each. Drop from test to degraded:
 | 8B | OCR+LLM | 0.768 -> 0.568 (-20.0) | 0.652 -> 0.377 |
 
 Both methods get worse, and OCR+LLM falls further at 4B and 8B. The 2B VLM is the exception for total accuracy:
-it dropped least (-6.4) although its item F1 dropped by about the same as the others. The degraded set is only 100 receipts with 25 per effect, so I did not
-break results down per effect.
+it dropped least (-6.4) although its item F1 dropped by about the same as the others. The degraded set is only 100 receipts with 22–25 scored per effect; a per-effect
+breakdown for 2B (plain, rows, VLM) is in section 6.5, and differences of 1–3 receipts there are noise.
 
 ## 5. Speed and tokens
 
@@ -117,10 +127,12 @@ exactly on all 450 receipts. Test split, mean seconds per receipt (median in bra
 - The earlier OCR times stored in `cache/ocr/` (10 to 14 s) were from a laptop CPU and are not used here.
 - Timings come from one pass; I have not repeated runs, so differences of a few tenths of a second are not meaningful.
 
-## 6. Why does OCR+LLM do so much worse? (checked, with one correction)
+## 6. Why does OCR+LLM do so much worse? (tested)
 
-My first guess was that PaddleOCR misreads numbers. I checked this by testing whether the correct total appears as a digit string
-anywhere in the OCR text (a loose upper bound: the number could appear for another reason):
+### 6.1 The number is usually in the OCR text
+
+First guess: PaddleOCR misreads numbers. Check: does the correct value appear as a digit string anywhere in the OCR
+text? (A loose upper bound; the number could appear for another reason.)
 
 | Split | Correct total appears in OCR text | Correct item price appears in OCR text |
 |---|---|---|
@@ -129,19 +141,126 @@ anywhere in the OCR text (a loose upper bound: the number could appear for anoth
 | train | 141 / 148 (95%) | 97% |
 | test_degraded | 76 / 95 (80%) | 75% |
 
-On clean receipts OCR usually *does* capture the right number (93% on test), yet OCR+LLM total accuracy is only 52% to 77%.
-So on clean receipts the main loss is **not OCR misreading digits**. The likely cause is that the OCR text loses layout
-(columns, which number belongs to which row, which line is the total vs. cash paid vs. change), so the model picks the wrong number.
-This is a hypothesis supported by the numbers above, not something I verified by reading failure cases one by one; the next step is to read
-the wrong outputs in `results/runs/`. On degraded receipts OCR coverage does drop (93% -> 80%), so there OCR errors do contribute.
+On clean receipts OCR usually captures the right number (93% on test). Yet plain OCR+LLM total accuracy is only
+52% to 77% on test. So on clean receipts the main loss is **not** OCR misreading digits.
+
+### 6.2 The text format split printed rows
+
+The OCR text in all main runs (`receipt.ocr.paddle.ocr_image`) put **every OCR box on its own line**, ordered by 15 px
+height bands. The boxes are about 41 px tall (median). So one printed row like `DONAT GULA  1X  11,000` became
+three lines, sometimes out of order. On `test_0003`, 4B OCR+LLM took `DONAT GULA` to be the merchant and named the item
+`1.00xITEMs`; every number was right but the structure was wrong.
+
+### 6.3 Method A: group OCR boxes into rows
+
+Only the arrangement of the OCR text changes. The OCR, model, prompt and scoring are identical. Boxes are re-extracted
+with positions (`cache/ocr_boxes/`); joined in the old format they reproduce the old text on 450/450 receipts.
+
+**Row rule** (`src/receipt/ocr/layout.py`): a box joins the nearest row whose centre is within 0.5 × the receipt's
+median box height of the box's centre. It never joins a row where it would sit on top of another box (> 50% x-overlap).
+Each row is sorted left to right, and pieces are spaced by their x position. The settings were chosen by looking at a
+few receipts, not tuned on scores.
+
+Example, `val_0010`:
+
+```
+Plain (main runs)        Method A (rows)
+Serbu 1                      Serbu 1                    40.000
+40.000                    2  Choco Peanut Bread         20.000
+2                                       TOTAL      60.000
+Choco Peanut Bread       CASH                           60.000
+20.000                   CHANGED                            0
+60.000
+TOTAL ...
+```
+
+### 6.4 Method A results (Qwen3-VL-2B, all splits)
+
+| Split | Method | Total acc | Subtotal acc | Tax acc | Item F1 | JSON valid | End-to-end s |
+|---|---|---|---|---|---|---|---|
+| validation | Plain | 0.684 | 0.776 | 0.511 | 0.471 | 0.99 | 4.31 |
+| validation | **A: rows** | **0.796** | **0.955** | **0.617** | **0.505** | 1.00 | 4.36 |
+| validation | VLM | 0.918 | 0.970 | 0.766 | 0.807 | 1.00 | 2.44 |
+| test | Plain | 0.579 | 0.754 | 0.610 | 0.402 | 1.00 | 4.53 |
+| test | **A: rows** | **0.695** | **0.923** | **0.683** | **0.449** | 1.00 | 4.56 |
+| test | VLM | 0.832 | 0.908 | 0.780 | 0.807 | 1.00 | 2.52 |
+| train | Plain | 0.561 | 0.710 | 0.600 | 0.424 | 0.993 | 4.33 |
+| train | **A: rows** | **0.662** | **0.817** | **0.673** | **0.507** | 0.987 | 4.47 |
+| train | VLM | 0.818 | 0.903 | 0.800 | 0.787 | 1.00 | 2.42 |
+| test_degraded | Plain | 0.474 | 0.415 | 0.317 | 0.259 | 0.99 | 4.38 |
+| test_degraded | **A: rows** | **0.526** | **0.554** | **0.341** | **0.323** | 0.99 | 4.38 |
+| test_degraded | VLM | 0.768 | 0.800 | 0.585 | 0.629 | 1.00 | 2.61 |
+
+- **Rows improve every field on every split.** Gains over plain:
+  - total: +5 to +12 pts
+  - subtotal: +11 to +18 pts
+  - tax: +2 to +11 pts
+  - item F1: +3 to +8 pts
+- **More fixed than broken.** Receipt by receipt, over all splits, A fixed 61 totals that plain got wrong and broke 19.
+- **Share of the test gap to the VLM that A closes:**
+  - total: ~46%
+  - subtotal: all of it (0.923 vs VLM 0.908)
+  - tax: ~43%
+  - item F1: only ~12%
+- **Almost free.** Input tokens rise about 4% (test 284 vs 273 per receipt), and speed is unchanged.
+
+### 6.5 What layout does not fix
+
+**Quantities.** For each test ground-truth item, I took the predicted item with the closest name and sorted the result.
+This is a first-match diagnostic, not the official metric.
+
+| Outcome (test, 251 items) | Plain | A: rows | VLM |
+|---|---|---|---|
+| Matched | 104 | 113 | 212 |
+| No predicted item with a similar name | 65 | **44** | 10 |
+| Name OK, quantity wrong (price OK) | 27 | **44** | 1 |
+| Name OK, price wrong | 41 | 39 | 28 |
+| Name OK, quantity and price wrong | 14 | 11 | 0 |
+
+- **Rows recover item names, but many of those items then fail on quantity.**
+- **In 27 of the 44 quantity errors, the quantity is not in the item's OCR row at all.** Either it isn't printed (CORD
+  still labels it, usually as 1) or OCR missed it. The 2B model then **invents a quantity from the price digits**:
+  - `ICE BLACKCOFFE 82,000` → qty 82
+  - `Lemon Tea (L) 25.000` → qty 25
+- **The VLM almost never gets quantity wrong** (1 of 251).
+
+**OCR detection misses.** On `val_0010` the image clearly shows `2  Serbu 1`, but the mobile OCR detector produced no
+box for that `2`. No text format can recover a missed box; only the image method can.
+
+**Degraded photos.** Total accuracy by effect, test_degraded, 2B (correct / scored):
+
+| Effect | Plain | A: rows | VLM |
+|---|---|---|---|
+| blur | 9/24 | 11/24 | 18/24 |
+| rotate | 9/22 | 8/22 | 16/22 |
+| darken | 18/25 | 21/25 | 24/25 |
+| lowres | 9/24 | 10/24 | 15/24 |
+
+- **Rotation is the one effect where rows don't help.** Tilted lines are the known weak spot of the row rule.
+- **Blur and low-res lose the text in OCR itself.**
+
+### 6.6 Conclusion
+
+- **Text arrangement explains a large part of the header-field gap** between OCR+LLM and the VLM.
+- **It explains only a small part of the item gap.** That gap comes mostly from information missing from the OCR
+  text (quantities, missed boxes), which the small model then guesses.
+- **The image method is still best on every field and split, and faster end to end.**
+
+Full analysis: `results/method_A_rows_report_2026-10-22_1733.md`. Not yet run:
+- Method B (rows + x positions)
+- Method A on 4B and 8B
 
 ## 7. All results
 
-Total acc / Item F1 (JSON-valid rate was 1.00 everywhere except: 4B VLM train 0.993, 2B OCR+LLM validation 0.99, test_degraded 0.99, train 0.993).
+Total acc / Item F1. "OCR+LLM" is the plain format; "OCR+LLM rows" is Method A. JSON-valid rate was 1.00 everywhere except:
+- 4B VLM train: 0.993
+- 2B OCR+LLM: validation 0.99, test_degraded 0.99, train 0.993
+- 2B OCR+LLM rows: train 0.987, test_degraded 0.99
 
 | Model | Method | validation | test | train | test_degraded |
 |---|---|---|---|---|---|
 | 2B | OCR+LLM | 0.684 / 0.471 | 0.579 / 0.402 | 0.561 / 0.424 | 0.474 / 0.259 |
+| 2B | OCR+LLM rows | 0.796 / 0.505 | 0.695 / 0.449 | 0.662 / 0.507 | 0.526 / 0.323 |
 | 2B | VLM | 0.918 / 0.807 | 0.832 / 0.807 | 0.818 / 0.787 | 0.768 / 0.629 |
 | 4B | OCR+LLM | 0.541 / 0.493 | 0.516 / 0.547 | 0.493 / 0.534 | 0.368 / 0.290 |
 | 4B | VLM | 0.888 / 0.783 | 0.853 / 0.825 | 0.804 / 0.796 | 0.737 / 0.711 |
@@ -160,14 +279,19 @@ splits just differ (and each has only 100 receipts).
 5. **Item matching is strict** (exact qty and price, fuzzy name >= 80 provisional, one-to-one). One wrong digit counts as both a miss and a false positive. The 80 threshold was not tuned.
 6. **Merchant and date are not evaluated**, because CORD has no labels for them.
 7. **CORD only**: Indonesian receipts in one format family; results may not transfer to other countries or layouts.
-8. **No failure-case reading yet**: section 6 explanation is a hypothesis.
+8. **Plain OCR+LLM uses naive text formatting** (one box per line). Method A shows this costs 10+ points on totals at
+   2B; the 4B and 8B OCR+LLM numbers have not been re-run with rows, so they likely understate OCR+LLM too.
+9. **CORD labels quantity 1 even when it is not printed.** Text-only methods cannot see this, which inflates their
+   quantity errors. The prompt was not changed to handle it, which would be tuning (allowed on validation only).
+10. **OCR uses the mobile detector,** which misses some small isolated characters (e.g. a lone quantity digit).
 
 ## 9. Suggested next steps
 
-1. Read 20 wrong OCR+LLM outputs vs. ground truth to confirm the layout-loss explanation (and look at the 4B vs 2B oddity).
-2. Run the Gemini pair on a few receipts per day (cache makes reruns free) and add it to the same tables.
-3. Implement `cost.py` and add cost per receipt (API price from tokens; GPU-seconds estimate for Qwen, labelled as an estimate).
-4. Optional: pass OCR text with line positions/columns preserved to see whether layout is what the text-only path is missing.
+1. Run Method B (rows + x positions) on 2B, and Methods A/B on 4B and 8B; check whether the 4B < 2B oddity on plain
+   OCR+LLM disappears with rows.
+2. Optional, validation only: a prompt rule for missing quantities; if adopted, re-run every method with it.
+3. Run the Gemini pair on a few receipts per day (cache makes reruns free) and add it to the same tables.
+4. Implement `cost.py` and add cost per receipt (API price from tokens; GPU-seconds estimate for Qwen, labelled as an estimate).
 
 ## 10. Reproduce
 
@@ -176,6 +300,10 @@ splits just differ (and each has only 100 receipts).
 bash run_all_qwen.sh                                    # 4B (default)
 bash run_all_qwen.sh --model Qwen/Qwen3-VL-2B-Instruct
 bash run_all_qwen.sh --model Qwen/Qwen3-VL-8B-Instruct
+# layout experiment: boxes once (CPU), then Method A / B
+python data/scripts/run_ocr_boxes.py
+METHODS="ocr_llm_rows" bash run_all_qwen.sh --model Qwen/Qwen3-VL-2B-Instruct
+METHODS="ocr_llm_boxes" bash run_all_qwen.sh --model Qwen/Qwen3-VL-2B-Instruct
 ```
 
 Outputs: `results/runs/<method>__<model>__<split>.jsonl` (per receipt) and `results/tables/<same>.json` (summary).
