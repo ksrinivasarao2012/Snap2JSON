@@ -24,6 +24,12 @@ every field at every size, except subtotal at 2B on test (rows 0.954 vs VLM 0.92
 **Scope of this report:** the open-model (Qwen3-VL) pair only. The Gemini pair has not been run, and
 cost per receipt has not been computed yet (`cost.py` is a stub).
 
+**Charts:** `results/charts/` (built by `eval/analysis.ipynb` from the saved results only):
+1. image vs text by model size, 2. accuracy vs speed, 3. degraded photos by effect, 4. text fixes (plain -> rows ->
+larger OCR), 5. OCR accuracy by field, 6. wrong totals by cause (the 1000x problem).
+
+![Image vs text, test](charts/1_image_vs_text_test.png)
+
 ## 1. Question and setup
 
 Does a receipt-to-JSON system do better when the model **reads the image directly** (VLM) or when a separate
@@ -622,6 +628,7 @@ METHODS="ocr_llm_rows" bash run_all_qwen.sh                                   # 
 METHODS="ocr_llm_rows" bash run_all_qwen.sh --model Qwen/Qwen3-VL-8B-Instruct
 METHODS="ocr_llm_boxes" bash run_all_qwen.sh --model Qwen/Qwen3-VL-2B-Instruct
 python eval/threshold_check.py rescore 80 60                                  # name-threshold sensitivity table
+.venv/bin/jupyter nbconvert --to notebook --execute --inplace eval/analysis.ipynb   # charts -> results/charts/
 # OCR side experiment (validation only): detector options, then Method A on option T
 python data/scripts/compare_ocr.py run S T && python data/scripts/compare_ocr.py score
 .venv/bin/python eval/run_eval.py --backend qwen --method ocr_llm_rows --ocr-variant T --split validation --model Qwen/Qwen3-VL-2B-Instruct

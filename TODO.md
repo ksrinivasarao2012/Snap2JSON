@@ -8,7 +8,7 @@ Last updated: 2026-10-23. Results so far: `results/REPORT.md`. Session record: `
 2. **Gemini pair** (laptop): start early, because the free-tier daily limits spread it over several days.
 3. **`cost.py`:** cost per receipt is a required metric and still missing.
 4. *Optional:* **prompt-fix experiment** (section 1), as a separate experiment next to the untuned main result.
-5. **Write-up:** charts and the README results section.
+5. **Write-up:** the README results section (charts done).
 6. **Portfolio app:** FastAPI, Streamlit, Docker, CI, Azure (after the results are final).
 
 Lower priority: tilt-aware row grouping, sub-item extraction (Option 2), LoRA.
@@ -32,6 +32,7 @@ Lower priority: tilt-aware row grouping, sub-item extraction (Option 2), LoRA.
 - [x] 8B rows price errors read by hand: mostly a row-grouping slip on 3 tilted test receipts (REPORT.md 6.7)
 - [x] Larger OCR detector, validation only (REPORT.md 6.10): server det + 2048 px cap halves missing qty; Method A
       item F1 +5.9 (2B) / +1.7 (8B), OCR ~4x slower. Not adopted for the main results.
+- [x] Charts: `eval/analysis.ipynb` -> `results/charts/` (6 PNGs, from saved results only)
 - [x] OCR accuracy vs CORD word labels (`eval/ocr_accuracy.py`, REPORT.md 6.11): test CER 3.2%, 97% of words detected
 
 ## 1) Needs the lab GPU
@@ -66,7 +67,6 @@ Lower priority: tilt-aware row grouping, sub-item extraction (Option 2), LoRA.
   - run a few receipts per day (the cache makes reruns free)
   - live calls have never been tested
 - [ ] **`cost.py`:** Gemini cost from tokens and public prices; Qwen estimate from GPU-seconds (label it as an estimate)
-- [ ] Charts and `eval/analysis.ipynb` → `results/charts/`
 
 ### App
 - [ ] FastAPI backend (`app/api/main.py`): upload a receipt and get JSON back (PaddleOCR+Gemini, or Gemini vision)
