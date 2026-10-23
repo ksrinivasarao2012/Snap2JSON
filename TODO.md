@@ -8,7 +8,7 @@ Last updated: 2026-10-23. Results so far: `results/REPORT.md`. Session record: `
 2. **Gemini pair** (laptop): start early, because the free-tier daily limits spread it over several days.
 3. **`cost.py`:** cost per receipt is a required metric and still missing.
 4. *Optional:* **prompt-fix experiment** (section 1), as a separate experiment next to the untuned main result.
-5. **Write-up:** the README results section (charts done).
+5. **Write-up:** done (README, REPORT.md, charts); add Gemini and cost when they exist.
 6. **Portfolio app:** FastAPI, Streamlit, Docker, CI, Azure (after the results are final).
 
 Lower priority: tilt-aware row grouping, sub-item extraction (Option 2), LoRA.
@@ -82,7 +82,8 @@ Lower priority: tilt-aware row grouping, sub-item extraction (Option 2), LoRA.
 ### Write-up and housekeeping
 - [x] REPORT.md and the Method A report updated with the corrected ground truth (2026-10-23). The experiment log
       (`results/experiment_log_2026-10-22_1732.md`) is a dated record and keeps the pre-fix numbers.
-- [ ] README: results section (currently "TBD") with a link to REPORT.md; Linux setup steps
+- [x] README rewritten: results table, charts, findings, setup (uv, Linux), roadmap
+- [ ] README: add the Gemini pair and cost per receipt once they exist
 - [ ] When the lab work is done: delete the GitHub token
       (Settings → Developer settings → Fine-grained tokens) and run `git credential-cache exit`
 
