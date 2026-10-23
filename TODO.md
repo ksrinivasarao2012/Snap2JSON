@@ -9,7 +9,7 @@ Last updated: 2026-10-23. Results so far: `results/REPORT.md`. Session record: `
 3. **`cost.py`:** cost per receipt is a required metric and still missing.
 4. *Optional:* **prompt-fix experiment** (section 1), as a separate experiment next to the untuned main result.
 5. **Write-up:** done (README, REPORT.md, charts); add Gemini and cost when they exist.
-6. **Portfolio app:** FastAPI, Streamlit, Docker, CI, Azure (after the results are final).
+6. **Demo app:** one Gradio app on Hugging Face Spaces, image -> Gemini (after Gemini works); CI any time.
 
 Lower priority: tilt-aware row grouping, sub-item extraction (Option 2), LoRA.
 
@@ -68,16 +68,25 @@ Lower priority: tilt-aware row grouping, sub-item extraction (Option 2), LoRA.
   - live calls have never been tested
 - [ ] **`cost.py`:** Gemini cost from tokens and public prices; Qwen estimate from GPU-seconds (label it as an estimate)
 
-### App
-- [ ] FastAPI backend (`app/api/main.py`): upload a receipt and get JSON back (PaddleOCR+Gemini, or Gemini vision)
-- [ ] SQLite request logging (`app/api/logging_db.py`): latency, tokens, cost
-- [ ] Streamlit UI (`app/ui/streamlit_app.py`)
-- [ ] *Low priority:* Tesseract backup (`src/receipt/ocr/tesseract.py`)
+### Demo app (decided 2026-10-23)
+One **Gradio** app on **Hugging Face Spaces** (free CPU). No separate backend.
+Why: Vercel / Render free tiers are too small for PaddleOCR; HF Spaces runs Gradio directly (Streamlit only via
+Docker). The demo uses only **image -> Gemini**, the method the experiment found better and faster; OCR+LLM stays
+in the offline evaluation. Needs a working Gemini key first.
+- [ ] Gradio app (`app/app.py`): upload a receipt or pick a CORD sample -> JSON next to the image
+- [ ] Use the existing `Vlm` extractor + Gemini backend + schema check; show seconds and tokens (cost once `cost.py` exists)
+- [ ] Protect the free-tier quota: CORD samples with cached answers, and a per-visitor limit
+- [ ] Privacy note on the page: free-tier Gemini may use uploads, so do not upload private receipts
+- [ ] *Optional:* SQLite log of requests (latency, tokens, cost); note HF Spaces storage is not permanent by default
+- [ ] Deploy to HF Spaces (`GEMINI_API_KEY` as a Space secret); README: link + screenshot or GIF
+- [ ] Remove the old stubs: `app/api/` (FastAPI), `app/ui/streamlit_app.py`, `src/receipt/ocr/tesseract.py`,
+      `docker/Dockerfile`; update the `app` extra in pyproject (gradio instead of fastapi/uvicorn/streamlit)
 
 ### Engineering
-- [ ] Dockerfile (`docker/Dockerfile`)
-- [ ] GitHub Actions CI: run pytest on push (`.github/workflows/ci.yml`)
-- [ ] Azure Container Apps deploy (Gemini methods only)
+- [ ] GitHub Actions CI: run pytest on push (`.github/workflows/ci.yml`); badge in README
+
+Dropped (2026-10-23): FastAPI backend, Streamlit, Azure deploy, Tesseract backup, Dockerfile (not needed for HF
+Gradio; add back only if something else must call the API).
 
 ### Write-up and housekeeping
 - [x] REPORT.md and the Method A report updated with the corrected ground truth (2026-10-23). The experiment log

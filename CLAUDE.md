@@ -40,9 +40,9 @@ Fields missing from CORD labels are `null` and not scored (see CORD findings bel
 - Scored header fields in practice: total (always), subtotal and tax (about half the receipts).
 
 ## Tech stack (100% free, no paid APIs, no credit card)
-PaddleOCR (Tesseract backup, PaddleOCR-VL optional) · Gemini API free tier · Qwen3-VL via Hugging Face on lab GPU · Pydantic schema shared by all methods · FastAPI backend · Streamlit frontend · SQLite request logging (latency, tokens, cost) · pandas evaluation · Docker · GitHub Actions · Azure for Students (Container Apps, likely).
+PaddleOCR (Tesseract backup, PaddleOCR-VL optional) · Gemini API free tier · Qwen3-VL via Hugging Face on lab GPU · Pydantic schema shared by all methods · Gradio demo app on Hugging Face Spaces (free CPU) · optional SQLite request logging (latency, tokens, cost) · pandas evaluation · GitHub Actions CI.
 
-Live Azure demo: only PaddleOCR+Gemini and Gemini vision. Open models run only in offline evaluation.
+Live demo (decided 2026-10-23): one Gradio app on HF Spaces, image -> Gemini only (the better and faster method; Vercel/Render free tiers are too small for PaddleOCR). OCR+LLM and open models run only in offline evaluation. Dropped: FastAPI, Streamlit, Azure, Tesseract, Dockerfile.
 
 ## Rules
 - Gemini free tier may use submitted data: only send public dataset images.
@@ -52,7 +52,7 @@ Live Azure demo: only PaddleOCR+Gemini and Gemini vision. Open models run only i
 - Keep explanations simple and short.
 
 ## Layout
-`src/receipt/` (schema, normalize, cache, cost, ocr/, extractors/) · `data/scripts/` · `eval/` · `results/` · `app/` (api, ui) · `tests/` · `docker/` · `.github/workflows/`
+`src/receipt/` (schema, normalize, cache, cost, ocr/, extractors/) · `data/scripts/` · `eval/` · `results/` · `app/` (Gradio demo; old api/ui stubs to remove) · `tests/` · `docker/` · `.github/workflows/`
 
 ## Status
 Repo: https://github.com/ksrinivasarao2012/Snap2JSON (branch main). The `.env` (GEMINI_API_KEY, GEMINI_MODEL) is never committed.
@@ -82,4 +82,4 @@ Next steps:
 2. DONE (2026-10-23): failure audit, 20 validation errors per run for 2B plain/rows/VLM and 8B plain/VLM (`eval/audit_failures.py`, `results/audit_validation.csv`, REPORT.md 7.2). Scorer 3/100, label 2/100. 2B plain text: 12/20 errors from OCR input (8 order); rows: 7/20. Why 4B < 2B on total is still open.
 3. Gemini pair on a few receipts per day (daily limits), cache makes reruns free.
 4. Tune prompt/threshold on val only; never on test.
-5. Still stubs: cost.py, tesseract.py, FastAPI app, Streamlit UI, logging_db, Dockerfile, CI workflow. README DONE (results, charts, findings, setup). Charts DONE: `eval/analysis.ipynb` -> `results/charts/` (needs the `analysis` extra: matplotlib, jupyter).
+5. Still to do: cost.py, Gradio demo app (`app/app.py`), CI workflow. Old stubs to delete: app/api/, app/ui/, ocr/tesseract.py, docker/. README DONE (results, charts, findings, setup). Charts DONE: `eval/analysis.ipynb` -> `results/charts/` (needs the `analysis` extra: matplotlib, jupyter).

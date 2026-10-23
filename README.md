@@ -10,7 +10,7 @@ vision-language model that reads the photo directly? This project measures both 
 every field, and is also **faster** end to end. Smarter OCR formatting closes about half of the gap on totals but
 hardly any of it on line items.
 
-> Status: the open-model pair (Qwen3-VL) is complete. The Gemini pair, cost per receipt and the web app are in
+> Status: the open-model pair (Qwen3-VL) is complete. The Gemini pair, cost per receipt and the demo app are in
 > progress ([TODO.md](TODO.md)). Every number here comes from a saved run; nothing is estimated unless marked.
 
 ---
@@ -105,7 +105,7 @@ eval/               run_eval.py (resumable runner), metrics.py, error audits, oc
 data/scripts/       download CORD, map labels to our schema, make degraded copies, run / time OCR
 results/            REPORT.md, runs/ (every model output), tables/ (scores), charts/
 cache/              OCR text and boxes (committed); model responses (not committed)
-app/                FastAPI + Streamlit demo (in progress)
+app/                Gradio demo (planned)
 tests/              pytest, no GPU or API key needed
 ```
 
@@ -151,7 +151,8 @@ OCR text and boxes are already committed in `cache/`, so the model runs do not n
 - [x] Layout, OCR, number-format and error analyses; charts
 - [ ] Gemini Flash pair (free-tier limits, a few receipts per day)
 - [ ] Cost per receipt (API prices from tokens; GPU-time estimate for Qwen)
-- [ ] FastAPI + Streamlit demo, SQLite request logging, Docker, CI, Azure deploy (Gemini methods)
+- [ ] Gradio demo on Hugging Face Spaces (image -> Gemini, the faster and more accurate method)
+- [ ] CI (pytest on every push)
 
 ## Data and credits
 
