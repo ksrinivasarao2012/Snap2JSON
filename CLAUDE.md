@@ -82,4 +82,4 @@ Next steps:
 2. DONE (2026-10-23): failure audit, 20 validation errors per run for 2B plain/rows/VLM and 8B plain/VLM (`eval/audit_failures.py`, `results/audit_validation.csv`, REPORT.md 7.2). Scorer 3/100, label 2/100. 2B plain text: 12/20 errors from OCR input (8 order); rows: 7/20. Why 4B < 2B on total: explained in step 1 (1000x number format).
 3. Gemini pair on a few receipts per day (daily limits), cache makes reruns free.
 4. Tune prompt/threshold on val only; never on test.
-5. Still to do: cost.py, Gradio demo app (`app/app.py`). CI DONE (GitHub Actions, base deps only). Old stubs removed 2026-10-23. README DONE (results, charts, findings, setup). Charts DONE: `eval/analysis.ipynb` -> `results/charts/` (needs the `analysis` extra: matplotlib, jupyter).
+5. Still to do: cost.py. Demo app dropped (2026-10-23, deadline); an untested draft may sit in `app/`, not committed. CI DONE (GitHub Actions, base deps only). Old stubs removed 2026-10-23. README DONE (results, charts, findings, setup). Charts DONE: `eval/analysis.ipynb` -> `results/charts/` (needs the `analysis` extra: matplotlib, jupyter).

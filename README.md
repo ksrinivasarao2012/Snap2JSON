@@ -26,8 +26,7 @@ hardly any of it on line items.
 - Kept the evaluation trustworthy: no prompt tuning on test, a hand-labelled match-threshold check, a manual audit of
   100 errors (only 3% caused by the scorer), resumable cached runs, 68 unit tests and GitHub Actions CI.
 
-> Status: the open-model pair (Qwen3-VL) is complete. The Gemini pair, cost per receipt and the demo app are in
-> progress ([TODO.md](TODO.md)). Every number here comes from a saved run; nothing is estimated unless marked.
+> Scope: open models (Qwen3-VL), run on a lab GPU. Every number here comes from a saved run; nothing is estimated.
 
 ---
 
@@ -116,7 +115,7 @@ The scoring itself was checked: the name-match threshold was labelled by hand on
 ## Repository
 
 ```
-src/receipt/        schema, number normalisation, disk cache, OCR (PaddleOCR + row layout), extractors (Qwen, Gemini)
+src/receipt/        schema, number normalisation, disk cache, OCR (PaddleOCR + row layout), extractors (Qwen3-VL)
 eval/               run_eval.py (resumable runner), metrics.py, error audits, ocr_accuracy.py, analysis.ipynb
 data/scripts/       download CORD, map labels to our schema, make degraded copies, run / time OCR
 results/            REPORT.md, runs/ (every model output), tables/ (scores), charts/
@@ -149,24 +148,19 @@ jupyter nbconvert --to notebook --execute --inplace eval/analysis.ipynb
 ```
 
 OCR text and boxes are already committed in `cache/`, so the model runs do not need PaddleOCR. On Windows use
-`.venv\Scripts\activate` and `run_all_qwen.bat`. For the Gemini methods, copy `.env.example` to `.env` and set
-`GEMINI_API_KEY` and `GEMINI_MODEL`.
+`.venv\Scripts\activate` and `run_all_qwen.bat`.
 
 ## Limitations
 
-- One dataset (CORD, Indonesian receipts) and one open model family so far; the Gemini pair is not run yet.
+- One dataset (CORD, Indonesian receipts) and one open model family (Qwen3-VL).
 - One run per setting with greedy decoding; no confidence intervals, and tax rests on as few as 41 receipts.
 - The prompt was never tuned, on purpose; a tuned prompt might narrow the gap.
 - OCR runs on CPU; GPU OCR would make the text pipeline faster.
-- Cost per receipt is not computed yet.
 
-## Roadmap
+## What's done
 
 - [x] Qwen3-VL 2B / 4B / 8B, both methods, four splits
 - [x] Layout, OCR, number-format and error analyses; charts
-- [ ] Gemini Flash pair (free-tier limits, a few receipts per day)
-- [ ] Cost per receipt (API prices from tokens; GPU-time estimate for Qwen)
-- [ ] Gradio demo on Hugging Face Spaces (image -> Gemini, the faster and more accurate method)
 - [x] CI: pytest on every push (GitHub Actions, Python 3.10 and 3.12)
 
 ## Data and credits
