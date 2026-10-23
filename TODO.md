@@ -11,7 +11,7 @@ Last updated: 2026-10-23. Results so far: `results/REPORT.md`. Session record: `
 5. **Write-up:** charts and the README results section.
 6. **Portfolio app:** FastAPI, Streamlit, Docker, CI, Azure (after the results are final).
 
-Lower priority: larger OCR detector, sub-item extraction (Option 2), LoRA.
+Lower priority: tilt-aware row grouping, sub-item extraction (Option 2), LoRA.
 
 ## Done
 
