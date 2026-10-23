@@ -4,7 +4,7 @@ Last updated: 2026-10-23. Results so far: `results/REPORT.md`. Session record: `
 
 ## Priority order
 
-1. **Lab GPU session:** Method B on 2B, Method A on 4B and 8B (section 1); then compare and answer why 4B < 2B.
+1. **Why 4B < 2B on text totals, and why rows raise price errors at 4B/8B:** read errors on validation (no GPU).
 2. **Gemini pair** (laptop): start early, because the free-tier daily limits spread it over several days.
 3. **`cost.py`:** cost per receipt is a required metric and still missing.
 4. *Optional:* **prompt-fix experiment** (section 1), as a separate experiment next to the untuned main result.
@@ -25,15 +25,12 @@ Lower priority: larger OCR detector, sub-item extraction (Option 2), LoRA.
 - [x] REPORT.md updated with Method A
 - [x] Name threshold 80 checked by hand on validation (strict and lenient labels); lenient check at 60 in both reports
 - [x] Failure audit: 100 validation errors labelled model / ocr / scorer / gt (`results/audit_validation.csv`, REPORT.md 7.2)
+- [x] Method B (rows + x positions) on 2B, all splits: worse than A (REPORT.md 6.8)
+- [x] Method A on 4B and 8B, all splits: totals up at every size, test item F1 not (REPORT.md 6.7)
+- [x] Compared A vs B vs plain; REPORT.md and the Method A report (section 9) updated
 
 ## 1) Needs the lab GPU
 
-- [ ] **Method B (rows + x positions) on 2B**, all splits. It resumes from the 1 receipt already done.
-      `METHODS="ocr_llm_boxes" bash run_all_qwen.sh --model Qwen/Qwen3-VL-2B-Instruct`
-- [ ] **Method A on 4B and 8B**, all splits. About 30 and 52 min.
-      `METHODS="ocr_llm_rows" bash run_all_qwen.sh` (4B default) and `... --model Qwen/Qwen3-VL-8B-Instruct`
-      A 3-receipt 4B smoke test exists locally; it is a check, not a result.
-- [ ] **Method B on 4B and 8B**, only if B beats A on 2B.
 - [ ] *Optional:* **Prompt-fix experiment**, its own experiment. The failure audit (REPORT.md 7.2) found repeated
       model mistakes: the service charge given as tax (9 of 100 audited errors), cash paid / change / voucher given
       as total (7), names printed over two lines cut short or split (13). Add a few prompt rules (e.g. "total is the
@@ -49,8 +46,8 @@ Lower priority: larger OCR detector, sub-item extraction (Option 2), LoRA.
 ## 2) No GPU needed (laptop is fine)
 
 ### Experiment
-- [ ] Compare A vs B vs plain once B is done; update REPORT.md and the Method A report
-- [ ] Look at why 4B < 2B on plain OCR+LLM totals (and whether rows fix it)
+- [ ] Look at why 4B < 2B on OCR+LLM totals (rows do not fix it: 4B rows below 2B rows on every split)
+- [ ] Read the 4B/8B rows price errors (8B test: 23 -> 35 with rows; REPORT.md 6.7)
 - [ ] **Gemini pair:**
   - set `GEMINI_MODEL` in `.env` and check the free-tier limits in AI Studio
   - run a few receipts per day (the cache makes reruns free)

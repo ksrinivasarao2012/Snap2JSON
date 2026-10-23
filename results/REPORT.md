@@ -1,8 +1,8 @@
 # Snap2JSON: OCR+LLM vs VLM on CORD receipts (Qwen3-VL 2B / 4B / 8B)
 
 All numbers below come from real runs saved in `results/tables/*.json` and `results/runs/*.jsonl`
-(24 main runs: 3 model sizes x 2 methods x 4 splits, 450 receipts each; plus 4 runs of the OCR row-layout
-experiment, Method A, on 2B). Nothing is estimated except where marked.
+(24 main runs: 3 model sizes x 2 methods x 4 splits, 450 receipts each; plus 16 runs of the OCR layout
+experiment: Method A on 2B, 4B and 8B, and Method B on 2B, all 4 splits each). Nothing is estimated except where marked.
 
 **Corrected 2026-10-23:** a ground-truth bug read amounts like `Rp 58000.00` as 5,800,000 (2 validation, 4 test,
 8 train receipts). It was fixed and every table was re-scored from the saved model outputs; no model was re-run.
@@ -15,9 +15,11 @@ a looser check at 60 raises every item F1 a little and changes no conclusion. 10
 (section 7.2): only 3 were the scorer's fault and 2 were label problems.
 
 **Key update (section 6):** the OCR text in the main runs put every OCR box on its own line, which splits printed rows.
-Keeping rows together (Method A) raises 2B OCR+LLM test total accuracy from 0.600 to 0.737 and subtotal from 0.769 to
-0.954. So the main OCR+LLM numbers come from naive text formatting and **understate** the OCR approach. The image
-method still wins on every field except subtotal, where 2B rows (0.954) edges out the 2B VLM (0.923) on test.
+Keeping rows together (Method A) raises OCR+LLM test total accuracy at every model size: 2B 0.600 -> 0.737,
+4B 0.558 -> 0.716, 8B 0.811 -> 0.895. So the main (plain) OCR+LLM numbers come from naive text formatting and
+**understate** the OCR approach on header fields. Rows do **not** raise item F1 on test at 4B or 8B (they do on
+validation and train). Adding x positions (Method B, 2B) is worse than rows alone. The image method still wins on
+every field at every size, except subtotal at 2B on test (rows 0.954 vs VLM 0.923).
 
 **Scope of this report:** the open-model (Qwen3-VL) pair only. The Gemini pair has not been run, and
 cost per receipt has not been computed yet (`cost.py` is a stub).
@@ -32,7 +34,8 @@ The model is held fixed inside each pair, so only the input changes:
 | Method | Input to the model | Model |
 |---|---|---|
 | OCR+LLM | PaddleOCR text only (no image), one OCR box per line ("plain") | Qwen3-VL-{2B,4B,8B}-Instruct |
-| OCR+LLM, Method A | the same OCR text with boxes grouped into printed rows (section 6) | Qwen3-VL-2B-Instruct so far |
+| OCR+LLM, Method A | the same OCR text with boxes grouped into printed rows (section 6) | Qwen3-VL-{2B,4B,8B}-Instruct |
+| OCR+LLM, Method B | rows, with each piece's x position in pixels (section 6.8) | Qwen3-VL-2B-Instruct only |
 | VLM | the receipt image | the same Qwen3-VL model |
 
 - Same prompt for every run (`src/receipt/extractors/base.py`). Greedy decoding (no sampling), so runs are repeatable.
@@ -84,8 +87,8 @@ Gap (VLM minus OCR+LLM) on test:
 | 4B | +33.7 pts | +30.3 pts |
 | 8B | +15.8 pts | +25.4 pts |
 
-OCR+LLM here is the plain format (one OCR box per line). With rows (Method A, 2B only so far) the 2B gap shrinks to
-+12.6 pts on total and +38.6 pts on item F1 (section 6).
+OCR+LLM here is the plain format (one OCR box per line). With rows (Method A) the total gap shrinks to +12.6 pts (2B),
++17.9 (4B) and +7.4 (8B); the item F1 gap stays large: +38.6, +31.0 and +27.0 pts (section 6.7).
 
 The same direction holds on validation, train and degraded (full tables in section 7). Even the smallest VLM (2B, image)
 beats the largest OCR+LLM (8B, text) on item F1 (0.881 vs 0.700) and on total accuracy (0.863 vs 0.811).
@@ -96,8 +99,10 @@ Test split, VLM method: total acc 0.863 (2B) -> 0.895 (4B) -> 0.968 (8B); item F
 Going 2B -> 4B gives a small gain; 4B -> 8B gives the larger one.
 
 For OCR+LLM the pattern is **not monotonic**: on test, 4B has lower total accuracy than 2B (0.558 vs 0.600) but higher
-item F1 (0.607 vs 0.436). I did not investigate why (it may be how each model handles the unstructured text, or noise), so
-this should not be read as a real effect of size.
+item F1 (0.607 vs 0.436). With rows (Method A) the same pattern remains: 4B total is below 2B on every split (test
+0.716 vs 0.737, validation 0.653 vs 0.816), while 4B item F1 is higher (test 0.600 vs 0.495). So it is not only the
+text layout. I have not found the cause yet (it may be how each model reads text-only input, or noise), so this
+should not be read as a real effect of size.
 
 Sample sizes are small (test: 95 totals, 65 subtotals, 41 taxes), so a difference of a few points on a single split,
 especially for tax, is within noise. The image-vs-text gaps above are far larger than that.
@@ -255,15 +260,87 @@ box for that `2`. No text format can recover a missed box; only the image method
 
 ### 6.6 Conclusion
 
-- **Text arrangement explains a large part of the header-field gap** between OCR+LLM and the VLM.
-- **It explains only a small part of the item gap.** That gap comes mostly from information missing from the OCR
-  text (quantities, missed boxes), which the small model then guesses.
-- **The image method is still best on every field and split, except subtotal on test (rows 0.954 vs VLM 0.923),
-  and it is faster end to end.**
+- **Text arrangement explains a large part of the header-field gap** between OCR+LLM and the VLM, at every model
+  size (about half of the test total gap; section 6.7).
+- **It explains only a small part of the item gap,** and at 4B and 8B none of it on test. That gap comes mostly from
+  information missing from the OCR text (quantities, missed boxes), which the model then guesses.
+- **Giving x positions as numbers (Method B) does not help** the 2B model; plain spacing (Method A) is better.
+- **The image method is still best on every field, split and size, except subtotal at 2B on test (rows 0.954 vs
+  VLM 0.923), and it is faster end to end.**
 
-Full analysis: `results/method_A_rows_report_2026-10-22_1733.md`. Not yet run:
-- Method B (rows + x positions)
-- Method A on 4B and 8B
+Full 2B analysis: `results/method_A_rows_report_2026-10-22_1733.md`.
+
+### 6.7 Method A on 4B and 8B (all splits)
+
+Same rows, same prompt; only the model size changes. Test split:
+
+| Model | Method | Total acc | Subtotal acc | Tax acc | Item F1 | End-to-end s |
+|---|---|---|---|---|---|---|
+| 4B | Plain | 0.558 | 0.631 | 0.537 | 0.607 | 6.46 |
+| 4B | **A: rows** | **0.716** | **0.815** | **0.659** | 0.600 | 6.38 |
+| 4B | VLM | 0.895 | 0.954 | 0.805 | 0.910 | 4.67 |
+| 8B | Plain | 0.811 | 0.831 | 0.634 | 0.700 | 9.60 |
+| 8B | **A: rows** | **0.895** | **0.938** | **0.805** | 0.684 | 9.53 |
+| 8B | VLM | 0.968 | 0.985 | 0.878 | 0.954 | 7.91 |
+
+Gain of rows over plain, range over the 4 splits (percentage points):
+
+| Model | Total | Subtotal | Tax | Item F1 |
+|---|---|---|---|---|
+| 2B | +6 to +14 | +12 to +19 | +2 to +11 | +4 to +9 |
+| 4B | +7 to +16 | +6 to +18 | +2 to +12 | -1 to +9 |
+| 8B | +4 to +8 | +6 to +11 | 0 to +17 | -2 to +9 |
+
+- **Header fields improve at every size and split.** Receipt by receipt over all splits, rows fixed / broke totals:
+  2B 67 / 20, 4B 57 / 13, 8B 50 / 25. The larger the model, the less it needs the layout help (8B plain is
+  already decent), but the net gain is positive at every size.
+- **Share of the test gap to the VLM that rows close:** total 52% (2B), 47% (4B), 53% (8B); subtotal all of it (2B),
+  57% (4B), 70% (8B); tax 43%, 45%, 70%.
+- **Items are mixed.** On test, rows change item F1 by -0.7 (4B) and -1.6 pts (8B), which is within noise; on
+  validation and train they add +5 to +9 pts at both sizes. So rows do not reliably close the item gap, which stays
+  27 to 39 pts on test.
+- **Degraded, rotate:** rows are worse than plain at every size (correct totals 2B 10 -> 8, 4B 6 -> 4, 8B 12 -> 9 of 22).
+  Tilted printed lines break the row rule. For the other effects rows help at every size:
+
+| Effect (test_degraded, totals correct / scored) | 4B plain | 4B rows | 4B VLM | 8B plain | 8B rows | 8B VLM |
+|---|---|---|---|---|---|---|
+| blur | 6/24 | 7/24 | 16/24 | 10/24 | 13/24 | 18/24 |
+| rotate | 6/22 | 4/22 | 15/22 | 12/22 | 9/22 | 21/22 |
+| darken | 16/25 | 22/25 | 25/25 | 21/25 | 24/25 | 25/25 |
+| lowres | 10/24 | 12/24 | 17/24 | 14/24 | 16/24 | 18/24 |
+
+- **Why items do not improve at 4B and 8B** (same first-match diagnostic as section 6.5, test, 251 items):
+
+| Outcome | 4B plain | 4B rows | 8B plain | 8B rows | 8B VLM |
+|---|---|---|---|---|---|
+| Matched | 148 | 147 | 176 | 169 | 238 |
+| No predicted item with a similar name | 46 | 42 | 38 | 34 | 8 |
+| Name OK, quantity wrong (price OK) | 2 | 7 | 5 | 12 | 0 |
+| Name OK, price wrong | 44 | **50** | 23 | **35** | 3 |
+| Name OK, quantity and price wrong | 11 | 5 | 9 | 1 | 2 |
+
+  Unlike 2B, the larger models rarely invent quantities. With rows they find a few more names, but they get **more
+  prices wrong** (8B: 23 -> 35), so the matches do not go up. I have not read these cases yet; one guess is that a
+  row holds several numbers (qty, unit price, line total) and the model picks the wrong one.
+- **Speed and tokens:** unchanged (rows: 284 input tokens per test receipt at every size, plain 273).
+
+### 6.8 Method B: rows plus x positions (2B only)
+
+Each row is written as `text [x=..]` pieces joined with `|`, after one header line explaining the format, so the
+model sees column positions as numbers instead of spaces. Everything else is as in Method A.
+
+| Split | Plain | A: rows | B: rows + x | VLM |
+|---|---|---|---|---|
+| validation, total / item F1 | 0.684 / 0.502 | **0.816 / 0.546** | 0.745 / 0.498 | 0.939 / 0.882 |
+| test, total / item F1 | 0.600 / 0.436 | **0.737 / 0.495** | 0.684 / 0.414 | 0.863 / 0.881 |
+| train, total / item F1 | 0.595 / 0.448 | **0.696 / 0.535** | **0.696** / 0.441 | 0.872 / 0.845 |
+| test_degraded, total / item F1 | 0.484 / 0.268 | **0.547 / 0.338** | 0.495 / 0.229 | 0.789 / 0.686 |
+
+- **B is worse than A** on total on 3 splits (tied on train) and on item F1 on all 4.
+- **B's item F1 is no better than plain** (0.414 vs 0.436 on test): the x numbers seem to distract the 2B model
+  from the items. Totals still beat plain (fixed 62, broke 32 over all splits; A: 67 / 20).
+- **Cost:** 414 input tokens per test receipt (A 284, +46%), about 0.1 s slower end to end.
+- **Decision:** B was not run on 4B or 8B (the rule set before the run: only if B beats A on 2B).
 
 ## 7. All results
 
@@ -271,15 +348,20 @@ Total acc / Item F1. "OCR+LLM" is the plain format; "OCR+LLM rows" is Method A. 
 - 4B VLM train: 0.993
 - 2B OCR+LLM: validation 0.99, test_degraded 0.99, train 0.993
 - 2B OCR+LLM rows: train 0.987, test_degraded 0.99
+- 2B OCR+LLM rows + x (B): validation 0.98, train 0.987
+- 8B OCR+LLM rows: test_degraded 0.99
 
 | Model | Method | validation | test | train | test_degraded |
 |---|---|---|---|---|---|
 | 2B | OCR+LLM | 0.684 / 0.502 | 0.600 / 0.436 | 0.595 / 0.448 | 0.484 / 0.268 |
 | 2B | OCR+LLM rows | 0.816 / 0.546 | 0.737 / 0.495 | 0.696 / 0.535 | 0.547 / 0.338 |
+| 2B | OCR+LLM rows + x | 0.745 / 0.498 | 0.684 / 0.414 | 0.696 / 0.441 | 0.495 / 0.229 |
 | 2B | VLM | 0.939 / 0.882 | 0.863 / 0.881 | 0.872 / 0.845 | 0.789 / 0.686 |
 | 4B | OCR+LLM | 0.561 / 0.532 | 0.558 / 0.607 | 0.534 / 0.567 | 0.400 / 0.325 |
+| 4B | OCR+LLM rows | 0.653 / 0.580 | 0.716 / 0.600 | 0.622 / 0.658 | 0.474 / 0.364 |
 | 4B | VLM | 0.908 / 0.855 | 0.895 / 0.910 | 0.858 / 0.851 | 0.768 / 0.781 |
 | 8B | OCR+LLM | 0.847 / 0.653 | 0.811 / 0.700 | 0.784 / 0.653 | 0.600 / 0.395 |
+| 8B | OCR+LLM rows | 0.908 / 0.747 | 0.895 / 0.684 | 0.824 / 0.740 | 0.653 / 0.433 |
 | 8B | VLM | 0.980 / 0.924 | 0.968 / 0.954 | 0.966 / 0.903 | 0.863 / 0.857 |
 
 Validation scores are higher than test for most rows. Validation was not used for tuning, so this is not leakage; the
@@ -316,8 +398,10 @@ not depend on this threshold):
 | Model | OCR+LLM @80 / @60 | OCR+LLM rows @80 / @60 | VLM @80 / @60 | VLM - OCR+LLM gap @80 / @60 |
 |---|---|---|---|---|
 | 2B | 0.436 / 0.484 | 0.495 / 0.537 | 0.881 / 0.900 | 0.445 / 0.416 |
-| 4B | 0.607 / 0.660 | - | 0.910 / 0.932 | 0.303 / 0.272 |
-| 8B | 0.700 / 0.738 | - | 0.954 / 0.976 | 0.254 / 0.238 |
+| 4B | 0.607 / 0.660 | 0.600 / 0.650 | 0.910 / 0.932 | 0.303 / 0.272 |
+| 8B | 0.700 / 0.738 | 0.684 / 0.738 | 0.954 / 0.976 | 0.254 / 0.238 |
+
+(2B rows + x, Method B: 0.414 / 0.438.)
 
 The looser threshold helps OCR+LLM slightly more (its names are more often trimmed), but the image method stays far
 ahead on every split and model size, so the conclusions do not depend on the threshold.
@@ -369,8 +453,9 @@ Causes:
 5. **Item matching is strict** (exact qty and price, fuzzy name >= 80, one-to-one). One wrong digit counts as both a miss and a false positive. The 80 threshold was checked by hand on validation (7.1); the labels are one person's judgement, and at 80 some trimmed names still pass while some reordered names fail.
 6. **Merchant and date are not evaluated**, because CORD has no labels for them.
 7. **CORD only**: Indonesian receipts in one format family; results may not transfer to other countries or layouts.
-8. **Plain OCR+LLM uses naive text formatting** (one box per line). Method A shows this costs 10+ points on totals at
-   2B; the 4B and 8B OCR+LLM numbers have not been re-run with rows, so they likely understate OCR+LLM too.
+8. **Plain OCR+LLM uses naive text formatting** (one box per line). Method A shows this costs 8 to 16 points on test
+   totals across 2B, 4B and 8B. The row rule was set by eye, not tuned, and fails on rotated photos; a better layout
+   might close more of the gap. Method B (x positions) was tried on 2B only.
 9. **Quantity errors are real, not a labelling artefact.** CORD labels a quantity only when one is printed: each of the 767 quantity labels (validation, test, train)
    matches a printed quantity word in CORD's own word annotations.
    (An earlier version of this report said CORD labels quantity 1 when none is printed; that was wrong.)
@@ -379,8 +464,7 @@ Causes:
 
 ## 9. Suggested next steps
 
-1. Run Method B (rows + x positions) on 2B, and Methods A/B on 4B and 8B; check whether the 4B < 2B oddity on plain
-   OCR+LLM disappears with rows.
+1. Find out why 4B is below 2B on totals with text input (plain and rows): read a sample of 4B validation errors.
 2. Catch more lone quantity digits in OCR (e.g. a larger text detector), compared on validation only. Lower
    detection thresholds, a larger box margin and 1.5x upscaling were tried on validation and did not fix it.
 3. Run the Gemini pair on a few receipts per day (cache makes reruns free) and add it to the same tables.
@@ -396,7 +480,10 @@ bash run_all_qwen.sh --model Qwen/Qwen3-VL-8B-Instruct
 # layout experiment: boxes once (CPU), then Method A / B
 python data/scripts/run_ocr_boxes.py
 METHODS="ocr_llm_rows" bash run_all_qwen.sh --model Qwen/Qwen3-VL-2B-Instruct
+METHODS="ocr_llm_rows" bash run_all_qwen.sh                                   # 4B
+METHODS="ocr_llm_rows" bash run_all_qwen.sh --model Qwen/Qwen3-VL-8B-Instruct
 METHODS="ocr_llm_boxes" bash run_all_qwen.sh --model Qwen/Qwen3-VL-2B-Instruct
+python eval/threshold_check.py rescore 80 60                                  # name-threshold sensitivity table
 ```
 
 Outputs: `results/runs/<method>__<model>__<split>.jsonl` (per receipt) and `results/tables/<same>.json` (summary).

@@ -14,6 +14,10 @@ every method; header fields did not change.
 and kept. At a looser threshold of 60, 2B test item F1 is plain 0.484, rows 0.537, VLM 0.900 (at 80: 0.436, 0.495,
 0.881), so A's small item gain holds.
 
+**Update 2026-10-23 (after 4B, 8B and Method B runs):** see section 9 at the end. In short: rows raise totals at
+4B and 8B too (test 0.558 -> 0.716 and 0.811 -> 0.895), but not item F1 on test; Method B (x positions) is worse
+than A on 2B. Sections 1-8 below are about 2B only and are unchanged.
+
 ## 1. Summary
 
 - **Question:** OCR+LLM was far behind the image method (VLM). Is that partly because of how the OCR text was arranged?
@@ -201,7 +205,7 @@ Plain OCR text showed fewer quantity errors only because many of those items wer
 
 ## 7. Limitations
 
-- **One model size so far (2B).** The effect may be bigger or smaller at 4B and 8B.
+- **Sections 1-8 are 2B only.** 4B and 8B are in section 9.
 - **Small splits,** one run each, no confidence intervals. The receipt-level fixed/broken counts (3.4) are the most direct evidence.
 - **Row grouping is a simple rule** with fixed settings (0.5 × median height, 50% x-overlap). They were chosen by looking at a few receipts during development, not tuned on any split's scores. The example receipts were from test and validation.
 - **Quantity scoring is strict:** exact match, and a missing quantity counts as wrong. CORD labels a quantity only when one is printed: each of the 767 quantity labels (validation, test, train) matches a printed quantity word in CORD's own word annotations, so quantity errors are real (an earlier version said otherwise; that was wrong).
@@ -214,9 +218,63 @@ Plain OCR text showed fewer quantity errors only because many of those items wer
 
 ## 8. Next steps
 
-1. Run **Method B** (rows + x positions) on 2B and compare with A.
-2. Run **A on 4B and 8B,** to see whether the gain holds at larger sizes and whether quantity mistakes drop.
-3. **Catch more lone quantity digits in OCR** (e.g. a larger text detector), compared on validation only.
-4. Update `results/REPORT.md`:
-   - The plain OCR+LLM numbers come from naive formatting.
-   - Add the layout result and the OCR-miss limitation.
+1. ~~Run Method B on 2B~~ and ~~A on 4B and 8B~~: done 2026-10-23, section 9.
+2. **Catch more lone quantity digits in OCR** (e.g. a larger text detector), compared on validation only.
+3. Read the 4B and 8B rows price errors (section 9.2) and the 4B < 2B total errors.
+
+## 9. Update 2026-10-23: Method A on 4B and 8B, Method B on 2B
+
+All splits, same prompt and scoring. Runs: `results/runs/ocr_llm_rows__Qwen_Qwen3-VL-{4B,8B}-Instruct__*.jsonl` and
+`results/runs/ocr_llm_boxes__Qwen_Qwen3-VL-2B-Instruct__*.jsonl`.
+
+### 9.1 Does the gain hold at larger sizes? (test)
+
+| Model | Plain total | Rows total | VLM total | Plain F1 | Rows F1 | VLM F1 |
+|---|---|---|---|---|---|---|
+| 2B | 0.600 | **0.737** | 0.863 | 0.436 | **0.495** | 0.881 |
+| 4B | 0.558 | **0.716** | 0.895 | **0.607** | 0.600 | 0.910 |
+| 8B | 0.811 | **0.895** | 0.968 | **0.700** | 0.684 | 0.954 |
+
+- **Totals: yes.** Rows help at every size and split (+4 to +16 pts). Over all splits rows fixed / broke totals:
+  2B 67 / 20, 4B 57 / 13, 8B 50 / 25. About half of the test total gap to the VLM is closed at every size.
+- **Subtotal and tax too** (test: 4B +18 / +12 pts, 8B +11 / +17).
+- **Items: no on test** (-0.7 and -1.6 pts, within noise); on validation and train rows add +5 to +9 pts at 4B and 8B.
+- **The 4B < 2B oddity stays:** 4B rows total is below 2B rows on every split (validation 0.653 vs 0.816). Not
+  explained yet.
+- **Rotate is still the weak spot:** rows lose against plain on rotated photos at every size (2B 10 -> 8, 4B 6 -> 4,
+  8B 12 -> 9 of 22).
+
+### 9.2 Do quantity mistakes drop?
+
+Same first-match diagnostic as section 4 (test, 251 items):
+
+| Outcome | 2B rows | 4B rows | 8B rows | 8B VLM |
+|---|---|---|---|---|
+| Matched | 122 | 147 | 169 | 238 |
+| No similar name | 44 | 42 | 34 | 8 |
+| Quantity wrong (price OK) | **44** | 7 | 12 | 0 |
+| Price wrong | 28 | **50** | **35** | 3 |
+| Both wrong | 13 | 5 | 1 | 2 |
+
+- **Yes, quantity invention is a 2B problem.** 4B and 8B rarely make up a quantity from price digits.
+- **But they get more prices wrong with rows** than with plain text (4B 44 -> 50, 8B 23 -> 35), so matched items do not
+  rise. Not read by hand yet; a likely cause is rows with several numbers (qty, unit price, line total).
+
+### 9.3 Method B: rows + x positions (2B)
+
+| Split, total / item F1 | Plain | A: rows | B: rows + x |
+|---|---|---|---|
+| validation | 0.684 / 0.502 | **0.816 / 0.546** | 0.745 / 0.498 |
+| test | 0.600 / 0.436 | **0.737 / 0.495** | 0.684 / 0.414 |
+| train | 0.595 / 0.448 | **0.696 / 0.535** | **0.696** / 0.441 |
+| test_degraded | 0.484 / 0.268 | **0.547 / 0.338** | 0.495 / 0.229 |
+
+- B is worse than A everywhere except a tie on train total, and its item F1 is no better than plain.
+- B uses 414 input tokens per test receipt (A 284) and is about 0.1 s slower.
+- So B was not run on 4B or 8B (the rule set before the run).
+
+### 9.4 Updated conclusion
+
+Rows (A) are the better text format at every model size for header fields and cost almost nothing. They do not fix
+items: at 2B the model invents quantities, at 4B and 8B it picks wrong prices, and OCR still misses some characters.
+The image method stays best on every field at every size (except 2B test subtotal) and is faster end to end.
