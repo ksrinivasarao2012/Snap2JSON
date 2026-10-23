@@ -156,3 +156,8 @@ OCR text and boxes are already committed in `cache/`, so the model runs do not n
 ## Data and credits
 
 Receipts and labels: CORD v2 by NAVER Clova (CC-BY-4.0). OCR: PaddleOCR (PP-OCRv5). Models: Qwen3-VL by the Qwen team.
+
+## License
+
+Code: [MIT](LICENSE). The CORD data keeps its own license (CC-BY-4.0); the data is not in this repo except
+the derived labels in `data/processed/` and OCR output in `cache/`.
