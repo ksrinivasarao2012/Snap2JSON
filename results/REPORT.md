@@ -391,6 +391,47 @@ counts it as wrong. Sometimes it also drops the zeros (`535.5` for 535,500). Scr
 - So the 4B text numbers measure "reading the receipt **and** writing the number in the right format". The format
   part is a real failure of the system as built, so it stays in the score.
 
+### 6.10 Would better OCR fix the items? A larger text detector (validation only)
+
+Sections 6.5 and 7.2 found that many item errors come from text missing from the OCR, especially lone quantity
+digits that the mobile detector does not box. Test: swap only the OCR text detector, keep everything else (recognizer,
+Method A rows, prompt, models, scoring). Validation only; test was not used.
+
+**OCR alone** (`data/scripts/compare_ocr.py`, boxes in `cache/ocr_variants/`, lab CPU):
+
+| Validation, 100 receipts | Mobile detector (main runs) | Server detector | **Server + 2048 px cap ("T")** |
+|---|---|---|---|
+| Labelled qty > 1 not on the item's OCR row (or the next) | 13 / 39 | 6 / 39 | **6 / 39** |
+| Item name and price both in the OCR text | 205 / 220 | 201 / 220 | 207 / 220 |
+| Total in the OCR text | 94 / 98 | 91 / 98 | 93 / 98 |
+| Receipts with no text found | 0 | 3 | 0 |
+| OCR seconds per receipt (mean / median) | 2.3 / 1.6 | 15.1 / 8.6 | 9.2 / 8.6 |
+
+- The server detector (`PP-OCRv5_server_det`) found **no text at all** on 3 very large photos (about 2300 x 4200 px).
+  Capping its input at 2048 px on the longest side (only 15 of 100 images are larger; the VLM uses the same cap)
+  fixed that. Earlier attempts (lower detection thresholds, a larger box margin, 1.5x upscaling) did not help.
+
+**With the model** (Method A rows on the T text, `run_eval.py --ocr-variant T`):
+
+| Validation | OCR | Total | Subtotal | Tax | Item F1 | End-to-end s |
+|---|---|---|---|---|---|---|
+| 2B | mobile | **0.816** | **0.970** | 0.638 | 0.546 | 4.36 |
+| 2B | T | 0.786 | 0.940 | **0.681** | **0.606** | 11.37 |
+| 2B | VLM (image) | 0.939 | 0.985 | 0.787 | 0.882 | 2.44 |
+| 8B | mobile | 0.908 | 0.955 | 0.660 | 0.747 | 8.91 |
+| 8B | T | **0.918** | 0.955 | **0.723** | **0.763** | 16.12 |
+| 8B | VLM (image) | 0.980 | 1.000 | 0.787 | 0.924 | 7.65 |
+
+- **Items improve, mostly at 2B:** item F1 +5.9 pts (2B) and +1.7 (8B). 2B quantity errors (first-match
+  diagnostic, as in 6.5) drop from 39 to 31 and matched items rise from 120 to 133.
+- **That closes only a small part of the item gap to the VLM:** about 18% at 2B and 9% at 8B.
+- **Totals are mixed and small:** T fixed 2 / broke 5 totals at 2B, fixed 3 / broke 2 at 8B (noise level).
+- **Much slower:** OCR rises from 2.3 to 9.2 s per receipt on CPU, so OCR+LLM takes 11 to 16 s, while the VLM takes
+  2.4 to 7.7 s.
+- **Conclusion:** weak OCR is a real but small part of the item gap. Even with a better detector, the text method
+  stays far behind the image method on items and becomes 2 to 5 times slower. T is **not** used for the main results;
+  it was not run on test or on the other splits.
+
 ## 7. All results
 
 Total acc / Item F1. "OCR+LLM" is the plain format; "OCR+LLM rows" is Method A. JSON-valid rate was 1.00 everywhere except:
@@ -511,13 +552,14 @@ Causes:
    (An earlier version of this report said CORD labels quantity 1 when none is printed; that was wrong.)
    Unprinted quantities have no label and are not scored.
 10. **OCR uses the mobile detector,** which misses some small isolated characters (e.g. a lone quantity digit).
+    A larger detector halves those misses on validation but adds only +2 to +6 pts item F1 and about 7 s per receipt
+    (section 6.10); it was tested on validation only.
 
 ## 9. Suggested next steps
 
 1. Optional output-format experiment (section 6.9): amounts as printed strings, converted by `parse_amount`;
    validation first, then test once, all methods; reported next to the main result.
-2. Catch more lone quantity digits in OCR (e.g. a larger text detector), compared on validation only. Lower
-   detection thresholds, a larger box margin and 1.5x upscaling were tried on validation and did not fix it.
+2. Optional: tilt-aware row grouping (section 6.7). The larger OCR detector was tested (6.10) and is not adopted.
 3. Run the Gemini pair on a few receipts per day (cache makes reruns free) and add it to the same tables.
 4. Implement `cost.py` and add cost per receipt (API price from tokens; GPU-seconds estimate for Qwen, labelled as an estimate).
 
@@ -535,6 +577,9 @@ METHODS="ocr_llm_rows" bash run_all_qwen.sh                                   # 
 METHODS="ocr_llm_rows" bash run_all_qwen.sh --model Qwen/Qwen3-VL-8B-Instruct
 METHODS="ocr_llm_boxes" bash run_all_qwen.sh --model Qwen/Qwen3-VL-2B-Instruct
 python eval/threshold_check.py rescore 80 60                                  # name-threshold sensitivity table
+# OCR side experiment (validation only): detector options, then Method A on option T
+python data/scripts/compare_ocr.py run S T && python data/scripts/compare_ocr.py score
+.venv/bin/python eval/run_eval.py --backend qwen --method ocr_llm_rows --ocr-variant T --split validation --model Qwen/Qwen3-VL-2B-Instruct
 ```
 
 Outputs: `results/runs/<method>__<model>__<split>.jsonl` (per receipt) and `results/tables/<same>.json` (summary).

@@ -4,7 +4,7 @@ Last updated: 2026-10-23. Results so far: `results/REPORT.md`. Session record: `
 
 ## Priority order
 
-1. **Larger OCR detector** for lone quantity digits (CPU, validation only), then tilt-aware row grouping.
+1. **Gemini pair** and **`cost.py`** (see below); optional tilt-aware row grouping.
 2. **Gemini pair** (laptop): start early, because the free-tier daily limits spread it over several days.
 3. **`cost.py`:** cost per receipt is a required metric and still missing.
 4. *Optional:* **prompt-fix experiment** (section 1), as a separate experiment next to the untuned main result.
@@ -30,6 +30,8 @@ Lower priority: larger OCR detector, sub-item extraction (Option 2), LoRA.
 - [x] Compared A vs B vs plain; REPORT.md and the Method A report (section 9) updated
 - [x] Why 4B < 2B on text totals: it writes `60.000`, read by JSON as 60 (REPORT.md 6.9, `eval/thousands_check.py`)
 - [x] 8B rows price errors read by hand: mostly a row-grouping slip on 3 tilted test receipts (REPORT.md 6.7)
+- [x] Larger OCR detector, validation only (REPORT.md 6.10): server det + 2048 px cap halves missing qty; Method A
+      item F1 +5.9 (2B) / +1.7 (8B), OCR ~4x slower. Not adopted for the main results.
 
 ## 1) Needs the lab GPU
 
@@ -48,8 +50,6 @@ Lower priority: larger OCR detector, sub-item extraction (Option 2), LoRA.
 - [ ] **Sub-item extraction (Option 2)**, its own experiment: add sub-items (modifiers, CORD `menu.sub`) to the prompt
       and schema, check the prompt on validation, then re-run every method and model (about 4 h GPU for Qwen;
       Gemini too). Until then sub-items are ignored in scoring (Option 1, done 2026-10-23).
-- [ ] **Larger OCR text detector** (e.g. PP-OCRv5 server det) for lone quantity digits, validation only
-      (`data/scripts/compare_ocr.py`; thresholds, box margin and upscaling did not fix it).
 - [ ] *Optional, later:* LoRA fine-tune on CORD train (excluding the 150 sampled receipts).
 
 ## 2) No GPU needed (laptop is fine)

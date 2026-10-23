@@ -219,7 +219,9 @@ Plain OCR text showed fewer quantity errors only because many of those items wer
 ## 8. Next steps
 
 1. ~~Run Method B on 2B~~ and ~~A on 4B and 8B~~: done 2026-10-23, section 9.
-2. **Catch more lone quantity digits in OCR** (e.g. a larger text detector), compared on validation only.
+2. ~~Catch more lone quantity digits in OCR~~: tested 2026-10-23 (REPORT.md 6.10). A larger detector halves the
+   missing quantities on validation; with rows, item F1 rises 0.546 -> 0.606 (2B) and 0.747 -> 0.763 (8B), but OCR
+   takes about 4x longer. Not adopted.
 3. Tilt-aware row grouping (TODO.md). The 8B price errors and the 4B < 2B cause are explained (REPORT.md 6.7, 6.9).
 
 ## 9. Update 2026-10-23: Method A on 4B and 8B, Method B on 2B
