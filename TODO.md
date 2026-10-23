@@ -83,7 +83,6 @@ Lower priority: tilt-aware row grouping, sub-item extraction (Option 2), LoRA.
 - [x] REPORT.md and the Method A report updated with the corrected ground truth (2026-10-23). The experiment log
       (`results/experiment_log_2026-10-22_1732.md`) is a dated record and keeps the pre-fix numbers.
 - [ ] README: results section (currently "TBD") with a link to REPORT.md; Linux setup steps
-- [ ] `run_all_qwen.bat`: add the `METHODS` / `SPLITS` options that the `.sh` has
 - [ ] When the lab work is done: delete the GitHub token
       (Settings → Developer settings → Fine-grained tokens) and run `git credential-cache exit`
 
