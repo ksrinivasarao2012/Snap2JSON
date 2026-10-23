@@ -26,6 +26,7 @@ from eval.metrics import aggregate, score_receipt  # noqa: E402
 
 IMAGE_ROOT = ROOT / "data" / "raw" / "cord"
 OCR_TIMING = ROOT / "cache" / "ocr_timing"  # written by data/scripts/time_ocr.py
+OCR_VARIANTS = ROOT / "cache" / "ocr_variants"  # written by data/scripts/compare_ocr.py (boxes + seconds per receipt)
 
 
 def load_rows(split):
@@ -97,7 +98,13 @@ def summarize(out_path, rows, ocr_seconds=None):
     return summary
 
 
-def build_extractor(backend_name, method, model):
+def run_name(method, model, split, ocr_variant=None):
+    """<method>__<model>__<split>; an OCR variant is added to the method part (e.g. ocr_llm_rows-ocrT)."""
+    m = f"{method}-ocr{ocr_variant}" if ocr_variant else method
+    return f"{m}__{model.replace('/', '_')}__{split}"
+
+
+def build_extractor(backend_name, method, model, ocr_variant=None):
     if backend_name == "gemini":
         from receipt.extractors.gemini import GeminiBackend
 
@@ -113,7 +120,8 @@ def build_extractor(backend_name, method, model):
     from receipt.extractors.ocr_llm import OcrLlm
 
     layout = {"ocr_llm": "plain", "ocr_llm_rows": "rows", "ocr_llm_boxes": "boxes"}[method]
-    return OcrLlm(backend, layout=layout), backend.model
+    kwargs = {"boxes_dir": OCR_VARIANTS / ocr_variant} if ocr_variant else {}
+    return OcrLlm(backend, layout=layout, **kwargs), backend.model
 
 
 def main():
@@ -123,10 +131,17 @@ def main():
     p.add_argument("--split", default="validation", choices=["validation", "test", "train", "test_degraded"])
     p.add_argument("--model", default=None, help="model name (Qwen default is in qwen.py; Gemini uses GEMINI_MODEL)")
     p.add_argument("--limit", type=int, default=None, help="only the first N receipts")
+    p.add_argument("--ocr-variant", default=None,
+                   help="read OCR boxes (and OCR seconds) from cache/ocr_variants/<name> instead of cache/ocr_boxes; "
+                        "rows/boxes methods only, e.g. T = server detector (data/scripts/compare_ocr.py)")
     p.add_argument("--summarize-only", action="store_true",
                    help="rebuild the summary from the saved run without loading the model (needs --model for gemini)")
     a = p.parse_args()
 
+    if a.ocr_variant and a.method not in ("ocr_llm_rows", "ocr_llm_boxes"):
+        p.error("--ocr-variant needs --method ocr_llm_rows or ocr_llm_boxes")
+    if a.ocr_variant and not (OCR_VARIANTS / a.ocr_variant).is_dir():
+        p.error(f"no OCR variant folder {OCR_VARIANTS / a.ocr_variant}")
     rows = load_rows(a.split)[: a.limit]
     if a.summarize_only:
         from receipt.extractors.qwen import DEFAULT_MODEL
@@ -134,15 +149,17 @@ def main():
         model = a.model or (DEFAULT_MODEL if a.backend == "qwen" else None)
         if not model:
             p.error("--summarize-only with gemini needs --model")
-        out = ROOT / "results" / "runs" / f"{a.method}__{model.replace('/', '_')}__{a.split}.jsonl"
+        out = ROOT / "results" / "runs" / f"{run_name(a.method, model, a.split, a.ocr_variant)}.jsonl"
     else:
-        extractor, model = build_extractor(a.backend, a.method, a.model)
-        name = f"{a.method}__{model.replace('/', '_')}__{a.split}"
-        out = run(extractor, rows, ROOT / "results" / "runs" / f"{name}.jsonl")
+        extractor, model = build_extractor(a.backend, a.method, a.model, a.ocr_variant)
+        out = run(extractor, rows, ROOT / "results" / "runs" / f"{run_name(a.method, model, a.split, a.ocr_variant)}.jsonl")
     name = out.stem
-    ocr_seconds = load_ocr_seconds([r["id"] for r in rows]) if a.method.startswith("ocr_llm") else None
+    timing_dir = OCR_VARIANTS / a.ocr_variant if a.ocr_variant else OCR_TIMING
+    ocr_seconds = load_ocr_seconds([r["id"] for r in rows], timing_dir) if a.method.startswith("ocr_llm") else None
     summary = summarize(out, rows, ocr_seconds)
     summary.update(method=a.method, model=model, split=a.split)
+    if a.ocr_variant:
+        summary.update(ocr_variant=a.ocr_variant)
     table = ROOT / "results" / "tables" / f"{name}.json"
     table.parent.mkdir(parents=True, exist_ok=True)
     table.write_text(json.dumps(summary, indent=1), encoding="utf-8")

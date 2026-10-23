@@ -64,3 +64,12 @@ def test_summarize_adds_ocr_time(tmp_path):
     assert s["ocr_timed_n"] == 2 and s["mean_ocr_seconds"] == 11.0
     assert s["mean_end_to_end_seconds"] == 12.5 and s["mean_seconds"] == 1.5
     assert "mean_ocr_seconds" not in summarize(out, ROWS)
+
+
+def test_run_name_with_ocr_variant():
+    from eval.run_eval import run_name
+
+    assert run_name("ocr_llm_rows", "Qwen/Qwen3-VL-8B-Instruct", "validation") == \
+        "ocr_llm_rows__Qwen_Qwen3-VL-8B-Instruct__validation"
+    assert run_name("ocr_llm_rows", "Qwen/Qwen3-VL-8B-Instruct", "validation", "T") == \
+        "ocr_llm_rows-ocrT__Qwen_Qwen3-VL-8B-Instruct__validation"

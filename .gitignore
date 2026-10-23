@@ -4,6 +4,7 @@ cache/*
 !cache/ocr/
 !cache/ocr_timing/
 !cache/ocr_boxes/
+!cache/ocr_variants/
 .env
 *.db
 __pycache__/

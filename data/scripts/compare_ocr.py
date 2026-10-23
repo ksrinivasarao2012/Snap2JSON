@@ -10,6 +10,8 @@ Options (each changes one thing vs the current setup A; defaults: thresh 0.3, bo
   C  larger box margin: text_det_unclip_ratio 2.0
   F  B + C
   D  upscale the image x1.5 before OCR (boxes scaled back to original pixels)
+  S  larger text detector: PP-OCRv5_server_det (recognizer unchanged)
+  T  S + cap the detector input at 2048 px longest side (S finds no text on very large photos, e.g. 2304x4096)
 Writes cache/ocr_variants/<option>/<id>.json = {"id", "boxes", "seconds"} (gitignored).
 
 Scores (validation only, never test):
@@ -40,6 +42,9 @@ OPTIONS = {
     "C": {"text_det_unclip_ratio": 2.0},
     "F": {"text_det_thresh": 0.2, "text_det_box_thresh": 0.4, "text_det_unclip_ratio": 2.0},
     "D": {},
+    "S": {"text_detection_model_name": "PP-OCRv5_server_det"},
+    "T": {"text_detection_model_name": "PP-OCRv5_server_det", "text_det_limit_type": "max",
+          "text_det_limit_side_len": 2048},
 }
 UPSCALE = {"D": 1.5}
 
@@ -136,12 +141,18 @@ def _read(path):
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
 
 
+def seconds_a(rid):
+    """Current setup's OCR seconds: lab re-timing (cache/ocr_timing) if present, else the laptop run (cache/ocr)."""
+    timed = _read(ROOT / "cache" / "ocr_timing" / f"{rid}.json")
+    return timed["seconds"] if timed else _read(ROOT / "cache" / "ocr" / f"{rid}.json")["seconds"]
+
+
 def score():
     rows = load_rows()
     results = {
         "A": score_option(
             lambda i: (_read(ROOT / "cache" / "ocr_boxes" / f"{i}.json") or {}).get("boxes"),
-            lambda i: _read(ROOT / "cache" / "ocr" / f"{i}.json")["seconds"],
+            seconds_a,
             rows,
         )
     }
@@ -156,7 +167,8 @@ def score():
     print("option | " + " | ".join(cols))
     for opt, r in results.items():
         print(f"{opt:6s} | " + " | ".join(str(r[c]) for c in cols))
-    print("Seconds for A are from the original laptop run; the others from this run (same laptop).")
+    print("Seconds for A: cache/ocr_timing (lab re-timing) when present, else the laptop run in cache/ocr.\n"
+          "Other options: seconds from their own run, on whatever machine ran them. Compare only same-machine runs.")
 
 
 if __name__ == "__main__":
