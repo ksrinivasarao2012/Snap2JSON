@@ -9,7 +9,7 @@ vision-language model that reads the photo directly? This project measures both 
 ![Image vs text on the CORD test set](results/charts/1_image_vs_text_test.png)
 
 **Short answer (Qwen3-VL 2B / 4B / 8B, 100 CORD test receipts):** reading the image wins at every model size, on
-every field, and is also **faster** end to end. Smarter OCR formatting closes about half of the gap on totals but
+every field except subtotal at 2B (where OCR rows edge it out, 0.954 vs 0.923), and is also **faster** end to end. Smarter OCR formatting closes about half of the gap on totals but
 hardly any of it on line items.
 
 ## Highlights

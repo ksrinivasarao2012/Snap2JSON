@@ -5,6 +5,10 @@ cache/*
 !cache/ocr_timing/
 !cache/ocr_boxes/
 !cache/ocr_variants/
+# only the variants used in REPORT.md 6.10-6.11 are committed (S, T); B/C/D/F were an earlier laptop-only check
+cache/ocr_variants/*
+!cache/ocr_variants/S/
+!cache/ocr_variants/T/
 .env
 *.db
 __pycache__/

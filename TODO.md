@@ -4,12 +4,11 @@ Last updated: 2026-10-23. Results so far: `results/REPORT.md`. Session record: `
 
 ## Priority order
 
-1. **Gemini pair** and **`cost.py`** (see below); optional tilt-aware row grouping.
-2. **Gemini pair** (laptop): start early, because the free-tier daily limits spread it over several days.
-3. **`cost.py`:** cost per receipt is a required metric and still missing.
-4. *Optional:* **prompt-fix experiment** (section 1), as a separate experiment next to the untuned main result.
-5. **Write-up:** done (README, REPORT.md, charts); add Gemini and cost when they exist.
-6. **Demo app:** one Gradio app on Hugging Face Spaces, image -> Gemini (after Gemini works); CI any time.
+1. **Gemini pair** (laptop): start early, because the free-tier daily limits spread it over several days.
+2. **`cost.py`:** cost per receipt is a required metric and still missing.
+3. *Optional:* **prompt-fix** and **output-format** experiments (section 1), next to the untuned main result.
+4. **Write-up:** done (README, REPORT.md, charts); add Gemini and cost when they exist.
+5. **Demo app:** one Gradio app on Hugging Face Spaces, image -> Gemini (after Gemini works). CI is done.
 
 Lower priority: tilt-aware row grouping, sub-item extraction (Option 2), LoRA.
 

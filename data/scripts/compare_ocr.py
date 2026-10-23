@@ -12,7 +12,8 @@ Options (each changes one thing vs the current setup A; defaults: thresh 0.3, bo
   D  upscale the image x1.5 before OCR (boxes scaled back to original pixels)
   S  larger text detector: PP-OCRv5_server_det (recognizer unchanged)
   T  S + cap the detector input at 2048 px longest side (S finds no text on very large photos, e.g. 2304x4096)
-Writes cache/ocr_variants/<option>/<id>.json = {"id", "boxes", "seconds"} (gitignored).
+Writes cache/ocr_variants/<option>/<id>.json = {"id", "boxes", "seconds"}. Only S and T are committed (used in
+REPORT.md 6.10-6.11 and by run_eval.py --ocr-variant); the other options are gitignored.
 
 Scores (validation only, never test):
   qty>1 missing : labelled quantity > 1 not on the item's OCR row or the next row (main target)
