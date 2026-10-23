@@ -1,0 +1,2 @@
+# Keep the chart notebook (outputs are embedded images) out of GitHub language stats
+*.ipynb linguist-documentation
