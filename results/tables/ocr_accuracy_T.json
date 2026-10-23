@@ -1,0 +1,53 @@
+{
+ "validation": {
+  "receipts": 100,
+  "item count": {
+   "words": 214.0,
+   "detected": 0.8785,
+   "cer": 0.1774,
+   "word_acc": 0.7243,
+   "numbers_n": 210.0,
+   "numbers_acc": 0.7667
+  },
+  "item name": {
+   "words": 557.0,
+   "detected": 1.0,
+   "cer": 0.0146,
+   "word_acc": 0.9336,
+   "numbers_n": 0.0,
+   "numbers_acc": null
+  },
+  "item price": {
+   "words": 276.0,
+   "detected": 0.9964,
+   "cer": 0.0194,
+   "word_acc": 0.8804,
+   "numbers_n": 270.0,
+   "numbers_acc": 0.9519
+  },
+  "subtotal / tax / total": {
+   "words": 549.0,
+   "detected": 0.9964,
+   "cer": 0.021,
+   "word_acc": 0.8925,
+   "numbers_n": 283.0,
+   "numbers_acc": 0.9329
+  },
+  "other": {
+   "words": 590.0,
+   "detected": 0.9881,
+   "cer": 0.0286,
+   "word_acc": 0.8644,
+   "numbers_n": 0.0,
+   "numbers_acc": null
+  },
+  "all": {
+   "words": 2186.0,
+   "detected": 0.9835,
+   "cer": 0.0251,
+   "word_acc": 0.8774,
+   "numbers_n": 763.0,
+   "numbers_acc": 0.8938
+  }
+ }
+}

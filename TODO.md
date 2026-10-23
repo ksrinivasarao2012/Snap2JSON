@@ -32,6 +32,7 @@ Lower priority: tilt-aware row grouping, sub-item extraction (Option 2), LoRA.
 - [x] 8B rows price errors read by hand: mostly a row-grouping slip on 3 tilted test receipts (REPORT.md 6.7)
 - [x] Larger OCR detector, validation only (REPORT.md 6.10): server det + 2048 px cap halves missing qty; Method A
       item F1 +5.9 (2B) / +1.7 (8B), OCR ~4x slower. Not adopted for the main results.
+- [x] OCR accuracy vs CORD word labels (`eval/ocr_accuracy.py`, REPORT.md 6.11): test CER 3.2%, 97% of words detected
 
 ## 1) Needs the lab GPU
 
@@ -66,7 +67,6 @@ Lower priority: tilt-aware row grouping, sub-item extraction (Option 2), LoRA.
   - live calls have never been tested
 - [ ] **`cost.py`:** Gemini cost from tokens and public prices; Qwen estimate from GPU-seconds (label it as an estimate)
 - [ ] Charts and `eval/analysis.ipynb` → `results/charts/`
-- [ ] *Optional:* OCR accuracy number, e.g. character error rate against labels (only a spot check so far)
 
 ### App
 - [ ] FastAPI backend (`app/api/main.py`): upload a receipt and get JSON back (PaddleOCR+Gemini, or Gemini vision)

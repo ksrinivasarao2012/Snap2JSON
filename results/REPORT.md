@@ -432,6 +432,50 @@ Method A rows, prompt, models, scoring). Validation only; test was not used.
   stays far behind the image method on items and becomes 2 to 5 times slower. T is **not** used for the main results;
   it was not run on test or on the other splits.
 
+### 6.11 OCR accuracy against CORD's word labels
+
+CORD labels each word of the fields it annotates (items, counts, prices, totals) with its position, in the same pixels
+as our images. Each labelled word is matched to the OCR box that contains its centre (`eval/ocr_accuracy.py`,
+`results/tables/ocr_accuracy.json`). Store name, address and footer text are mostly not labelled, so this measures how
+well OCR reads the **labelled** words; there is no OCR precision. Case and spaces are ignored.
+
+- **detected:** share of labelled words inside some OCR box.
+- **CER:** character error rate = edits / labelled characters (a missed word counts as fully deleted; unlabelled text
+  inside a box counts as errors, so CER is a slight overestimate).
+- **numbers:** share of labelled counts and amounts whose value appears in their OCR box.
+
+Main OCR (mobile detector), all labelled words:
+
+| Split | Receipts | Labelled words | Detected | CER | Word accuracy | Numbers correct |
+|---|---|---|---|---|---|---|
+| validation | 100 | 2,186 | 0.968 | 0.026 | 0.869 | 0.869 |
+| test | 100 | 2,356 | 0.972 | 0.032 | 0.852 | 0.862 |
+| train | 150 | 3,518 | 0.970 | 0.035 | 0.858 | 0.877 |
+| degraded, blur | 25 | 499 | 0.705 | 0.418 | 0.459 | 0.533 |
+| degraded, darken | 25 | 613 | 0.977 | 0.031 | 0.881 | 0.863 |
+| degraded, lowres | 25 | 619 | 0.808 | 0.325 | 0.446 | 0.515 |
+
+(Rotated receipts are not scored: rotation moves every word, so the labelled positions no longer match.)
+
+By field, test (detected / CER / numbers correct):
+
+| Field | Labelled words | Detected | CER | Numbers correct |
+|---|---|---|---|---|
+| item name | 659 | 0.997 | 0.017 | - |
+| **item count** | 229 | **0.834** | **0.241** | **0.691** |
+| item price | 317 | 0.984 | 0.027 | 0.917 |
+| subtotal / tax / total | 568 | 0.988 | 0.034 | 0.934 |
+
+- **On clean receipts OCR is good:** about 97% of labelled words are detected and CER is about 3%.
+- **Item counts are the weak spot:** only 83% of count words are found and 69% read correctly, against 98–99% for
+  names and prices. These are the lone digits (`2`, `1x`) the mobile detector misses (sections 6.5, 6.10).
+- **Blur and low-res are where OCR really fails:** CER rises to 33–42% and only about half the numbers survive.
+  Darkening does not hurt OCR. This matches the degraded results in 6.5, where the VLM is far ahead on blur and low-res.
+- **The larger detector (T, validation):** detected 0.968 -> 0.984, item counts detected 0.804 -> 0.879, numbers
+  correct 0.869 -> 0.894 (`results/tables/ocr_accuracy_T.json`).
+- So for clean receipts the OCR+LLM gap is not caused by poor OCR in general (6.1), but by layout (6.2-6.8),
+  number format (6.9) and the missed count digits.
+
 ## 7. All results
 
 Total acc / Item F1. "OCR+LLM" is the plain format; "OCR+LLM rows" is Method A. JSON-valid rate was 1.00 everywhere except:
@@ -553,7 +597,8 @@ Causes:
    Unprinted quantities have no label and are not scored.
 10. **OCR uses the mobile detector,** which misses some small isolated characters (e.g. a lone quantity digit).
     A larger detector halves those misses on validation but adds only +2 to +6 pts item F1 and about 7 s per receipt
-    (section 6.10); it was tested on validation only.
+    (section 6.10); it was tested on validation only. OCR accuracy itself is in section 6.11 (about 3% CER on clean
+   receipts; item counts detected only 83% of the time).
 
 ## 9. Suggested next steps
 
