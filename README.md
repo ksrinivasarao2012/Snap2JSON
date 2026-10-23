@@ -1,5 +1,7 @@
 # Snap2JSON
 
+[![ci](https://github.com/ksrinivasarao2012/Snap2JSON/actions/workflows/ci.yml/badge.svg)](https://github.com/ksrinivasarao2012/Snap2JSON/actions/workflows/ci.yml)
+
 **Snap a receipt, get structured JSON.** Which works better: OCR text fed to a language model, or a
 vision-language model that reads the photo directly? This project measures both on the same receipts with the
 **same model**, so only the input changes.
@@ -105,7 +107,6 @@ eval/               run_eval.py (resumable runner), metrics.py, error audits, oc
 data/scripts/       download CORD, map labels to our schema, make degraded copies, run / time OCR
 results/            REPORT.md, runs/ (every model output), tables/ (scores), charts/
 cache/              OCR text and boxes (committed); model responses (not committed)
-app/                Gradio demo (planned)
 tests/              pytest, no GPU or API key needed
 ```
 
@@ -152,7 +153,7 @@ OCR text and boxes are already committed in `cache/`, so the model runs do not n
 - [ ] Gemini Flash pair (free-tier limits, a few receipts per day)
 - [ ] Cost per receipt (API prices from tokens; GPU-time estimate for Qwen)
 - [ ] Gradio demo on Hugging Face Spaces (image -> Gemini, the faster and more accurate method)
-- [ ] CI (pytest on every push)
+- [x] CI: pytest on every push (GitHub Actions, Python 3.10 and 3.12)
 
 ## Data and credits
 

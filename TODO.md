@@ -32,6 +32,7 @@ Lower priority: tilt-aware row grouping, sub-item extraction (Option 2), LoRA.
 - [x] 8B rows price errors read by hand: mostly a row-grouping slip on 3 tilted test receipts (REPORT.md 6.7)
 - [x] Larger OCR detector, validation only (REPORT.md 6.10): server det + 2048 px cap halves missing qty; Method A
       item F1 +5.9 (2B) / +1.7 (8B), OCR ~4x slower. Not adopted for the main results.
+- [x] Old stubs removed (FastAPI, Streamlit, Tesseract, Dockerfile); CI added
 - [x] Charts: `eval/analysis.ipynb` -> `results/charts/` (6 PNGs, from saved results only)
 - [x] OCR accuracy vs CORD word labels (`eval/ocr_accuracy.py`, REPORT.md 6.11): test CER 3.2%, 97% of words detected
 
@@ -79,11 +80,10 @@ in the offline evaluation. Needs a working Gemini key first.
 - [ ] Privacy note on the page: free-tier Gemini may use uploads, so do not upload private receipts
 - [ ] *Optional:* SQLite log of requests (latency, tokens, cost); note HF Spaces storage is not permanent by default
 - [ ] Deploy to HF Spaces (`GEMINI_API_KEY` as a Space secret); README: link + screenshot or GIF
-- [ ] Remove the old stubs: `app/api/` (FastAPI), `app/ui/streamlit_app.py`, `src/receipt/ocr/tesseract.py`,
-      `docker/Dockerfile`; update the `app` extra in pyproject (gradio instead of fastapi/uvicorn/streamlit)
+- [ ] Add a `demo` extra in pyproject (gradio) when the app is built
 
 ### Engineering
-- [ ] GitHub Actions CI: run pytest on push (`.github/workflows/ci.yml`); badge in README
+- [x] GitHub Actions CI: pytest on push and PR, Python 3.10 and 3.12 (`.github/workflows/ci.yml`); badge in README
 
 Dropped (2026-10-23): FastAPI backend, Streamlit, Azure deploy, Tesseract backup, Dockerfile (not needed for HF
 Gradio; add back only if something else must call the API).

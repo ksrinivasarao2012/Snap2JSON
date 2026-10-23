@@ -40,7 +40,7 @@ Fields missing from CORD labels are `null` and not scored (see CORD findings bel
 - Scored header fields in practice: total (always), subtotal and tax (about half the receipts).
 
 ## Tech stack (100% free, no paid APIs, no credit card)
-PaddleOCR (Tesseract backup, PaddleOCR-VL optional) · Gemini API free tier · Qwen3-VL via Hugging Face on lab GPU · Pydantic schema shared by all methods · Gradio demo app on Hugging Face Spaces (free CPU) · optional SQLite request logging (latency, tokens, cost) · pandas evaluation · GitHub Actions CI.
+PaddleOCR · Gemini API free tier · Qwen3-VL via Hugging Face on lab GPU · Pydantic schema shared by all methods · Gradio demo app on Hugging Face Spaces (free CPU) · optional SQLite request logging (latency, tokens, cost) · pandas evaluation · GitHub Actions CI.
 
 Live demo (decided 2026-10-23): one Gradio app on HF Spaces, image -> Gemini only (the better and faster method; Vercel/Render free tiers are too small for PaddleOCR). OCR+LLM and open models run only in offline evaluation. Dropped: FastAPI, Streamlit, Azure, Tesseract, Dockerfile.
 
@@ -52,12 +52,12 @@ Live demo (decided 2026-10-23): one Gradio app on HF Spaces, image -> Gemini onl
 - Keep explanations simple and short.
 
 ## Layout
-`src/receipt/` (schema, normalize, cache, cost, ocr/, extractors/) · `data/scripts/` · `eval/` · `results/` · `app/` (Gradio demo; old api/ui stubs to remove) · `tests/` · `docker/` · `.github/workflows/`
+`src/receipt/` (schema, normalize, cache, cost, ocr/, extractors/) · `data/scripts/` · `eval/` · `results/` · `app/` (Gradio demo, not created yet) · `tests/` · `.github/workflows/ci.yml` (pytest on push, Python 3.10/3.12)
 
 ## Status
 Repo: https://github.com/ksrinivasarao2012/Snap2JSON (branch main). The `.env` (GEMINI_API_KEY, GEMINI_MODEL) is never committed.
 
-Done and tested (fake backends only, 65 tests):
+Done and tested (fake backends only, 68 tests):
 - Data: CORD val 100, test 100, train sample 150 (seed 42), degraded test 100 (one effect per receipt: blur/rotate/darken/lowres by index % 4). Ground truth in `data/processed/*.jsonl`. Images are NOT in git: rebuild with `data/scripts/download_cord.py` (and `train`) and `degrade.py`.
 - Full-split label counts: total present 98/100 val, 95/100 test; subtotal 67/65; tax 47/41. Merchant/date never labelled (null, not scored).
 - OCR: PaddleOCR 3.x mobile models (PP-OCRv5 mobile det + en rec, mkldnn off) run on all 450 images; text committed in `cache/ocr/<id>.json` (with seconds). ~10 s/receipt on laptop CPU. OCR accuracy vs CORD word labels (`eval/ocr_accuracy.py`, REPORT.md 6.11): test 97% of labelled words detected, CER 3.2%; item counts only 83% detected; blur/lowres CER 33-42%.
@@ -82,4 +82,4 @@ Next steps:
 2. DONE (2026-10-23): failure audit, 20 validation errors per run for 2B plain/rows/VLM and 8B plain/VLM (`eval/audit_failures.py`, `results/audit_validation.csv`, REPORT.md 7.2). Scorer 3/100, label 2/100. 2B plain text: 12/20 errors from OCR input (8 order); rows: 7/20. Why 4B < 2B on total is still open.
 3. Gemini pair on a few receipts per day (daily limits), cache makes reruns free.
 4. Tune prompt/threshold on val only; never on test.
-5. Still to do: cost.py, Gradio demo app (`app/app.py`), CI workflow. Old stubs to delete: app/api/, app/ui/, ocr/tesseract.py, docker/. README DONE (results, charts, findings, setup). Charts DONE: `eval/analysis.ipynb` -> `results/charts/` (needs the `analysis` extra: matplotlib, jupyter).
+5. Still to do: cost.py, Gradio demo app (`app/app.py`). CI DONE (GitHub Actions, base deps only). Old stubs removed 2026-10-23. README DONE (results, charts, findings, setup). Charts DONE: `eval/analysis.ipynb` -> `results/charts/` (needs the `analysis` extra: matplotlib, jupyter).

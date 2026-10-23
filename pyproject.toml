@@ -19,9 +19,8 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest"]
-ocr = ["paddleocr>=3", "paddlepaddle>=3", "pytesseract", "setuptools"]
+ocr = ["paddleocr>=3", "paddlepaddle>=3", "setuptools"]
 models = ["torch", "torchvision", "transformers", "accelerate", "google-genai"]
-app = ["fastapi", "uvicorn", "streamlit", "python-multipart"]
 analysis = ["matplotlib", "jupyter"]
 
 [tool.setuptools.packages.find]
