@@ -12,6 +12,20 @@ vision-language model that reads the photo directly? This project measures both 
 every field, and is also **faster** end to end. Smarter OCR formatting closes about half of the gap on totals but
 hardly any of it on line items.
 
+## Highlights
+
+**Stack:** Python, PyTorch, Hugging Face Transformers, PaddleOCR, Pydantic
+
+- Built an evaluation pipeline comparing OCR→LLM and image→VLM receipt extraction with Qwen3-VL (2B/4B/8B) on the
+  CORD dataset (450 receipts, 4 splits including degraded photos), keeping the model fixed so only the input changes.
+- Found that the VLM beats OCR+LLM at every model size (8B: 96.8% vs 81.1% total accuracy, 0.95 vs 0.70 item F1)
+  and is also faster end to end (7.9 s vs 9.6 s per receipt).
+- Raised OCR+LLM accuracy by up to 16 points by restoring row layout from OCR boxes. Diagnosed the remaining errors
+  (missed quantity digits, a number-format bug behind 4B's low scores) and measured OCR accuracy (3.2% CER) against
+  word-level labels.
+- Kept the evaluation trustworthy: no prompt tuning on test, a hand-labelled match-threshold check, a manual audit of
+  100 errors (only 3% caused by the scorer), resumable cached runs, 68 unit tests and GitHub Actions CI.
+
 > Status: the open-model pair (Qwen3-VL) is complete. The Gemini pair, cost per receipt and the demo app are in
 > progress ([TODO.md](TODO.md)). Every number here comes from a saved run; nothing is estimated unless marked.
 
