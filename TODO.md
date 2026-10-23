@@ -4,7 +4,7 @@ Last updated: 2026-10-23. Results so far: `results/REPORT.md`. Session record: `
 
 ## Priority order
 
-1. **Why rows raise price errors at 8B:** read errors on validation (no GPU). (4B < 2B: found, REPORT.md 6.9.)
+1. **Larger OCR detector** for lone quantity digits (CPU, validation only), then tilt-aware row grouping.
 2. **Gemini pair** (laptop): start early, because the free-tier daily limits spread it over several days.
 3. **`cost.py`:** cost per receipt is a required metric and still missing.
 4. *Optional:* **prompt-fix experiment** (section 1), as a separate experiment next to the untuned main result.
@@ -29,6 +29,7 @@ Lower priority: larger OCR detector, sub-item extraction (Option 2), LoRA.
 - [x] Method A on 4B and 8B, all splits: totals up at every size, test item F1 not (REPORT.md 6.7)
 - [x] Compared A vs B vs plain; REPORT.md and the Method A report (section 9) updated
 - [x] Why 4B < 2B on text totals: it writes `60.000`, read by JSON as 60 (REPORT.md 6.9, `eval/thousands_check.py`)
+- [x] 8B rows price errors read by hand: mostly a row-grouping slip on 3 tilted test receipts (REPORT.md 6.7)
 
 ## 1) Needs the lab GPU
 
@@ -54,7 +55,11 @@ Lower priority: larger OCR detector, sub-item extraction (Option 2), LoRA.
 ## 2) No GPU needed (laptop is fine)
 
 ### Experiment
-- [ ] Read the 8B rows price errors (8B test: 23 -> 35 with rows; only 6 of 36 are 1000x too small; REPORT.md 6.7)
+- [ ] *Optional:* **Tilt-aware row grouping** (no GPU to build; GPU to re-run A). On slightly tilted photos the row rule
+      shifts every price to the next item's row (`test_0085`, `test_0098`, `test_0045`; REPORT.md 6.7), and rows lose
+      to plain on rotated photos. Idea: estimate the slant from the boxes (e.g. the median angle of each box's top
+      edge, or the line through boxes on the same printed line) and group along it. Check the grouping on
+      **validation** receipts only, then re-run Method A.
 - [ ] **Gemini pair:**
   - set `GEMINI_MODEL` in `.env` and check the free-tier limits in AI Studio
   - run a few receipts per day (the cache makes reruns free)

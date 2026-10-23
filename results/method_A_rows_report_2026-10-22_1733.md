@@ -220,7 +220,7 @@ Plain OCR text showed fewer quantity errors only because many of those items wer
 
 1. ~~Run Method B on 2B~~ and ~~A on 4B and 8B~~: done 2026-10-23, section 9.
 2. **Catch more lone quantity digits in OCR** (e.g. a larger text detector), compared on validation only.
-3. Read the 8B rows price errors (section 9.2). The 4B < 2B cause is found (REPORT.md 6.9).
+3. Tilt-aware row grouping (TODO.md). The 8B price errors and the 4B < 2B cause are explained (REPORT.md 6.7, 6.9).
 
 ## 9. Update 2026-10-23: Method A on 4B and 8B, Method B on 2B
 
@@ -259,8 +259,10 @@ Same first-match diagnostic as section 4 (test, 251 items):
 
 - **Yes, quantity invention is a 2B problem.** 4B and 8B rarely make up a quantity from price digits.
 - **But they get more prices wrong with rows** than with plain text (4B 44 -> 50, 8B 23 -> 35), so matched items do not
-  rise. For 4B about half of its wrong prices are 1000x too small (REPORT.md 6.9); for 8B rows only 6 of 36 are, so
-  the rest is not read by hand yet (a guess: rows with several numbers, such as qty, unit price and line total).
+  rise. For 4B about half of its wrong prices are 1000x too small (REPORT.md 6.9). The 8B cases were read by hand
+  (REPORT.md 6.7): of 25 new errors with rows, 13 are a row-grouping slip on 3 slightly tilted receipts (each price
+  joins the next item's row), 6 the 1000x problem, 5 OCR misreads. On validation and train rows lower 8B's price
+  errors, so this is the tilt weak spot, not a general effect.
 
 ### 9.3 Method B: rows + x positions (2B)
 

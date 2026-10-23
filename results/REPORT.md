@@ -321,8 +321,26 @@ Gain of rows over plain, range over the 4 splits (percentage points):
 | Name OK, quantity and price wrong | 11 | 5 | 9 | 1 | 2 |
 
   Unlike 2B, the larger models rarely invent quantities. With rows they find a few more names, but they get **more
-  prices wrong** (8B: 23 -> 35), so the matches do not go up. I have not read these cases yet; one guess is that a
-  row holds several numbers (qty, unit price, line total) and the model picks the wrong one.
+  prices wrong** (8B: 23 -> 35), so the matches do not go up. For 4B about half of these are the 1000x format
+  problem (section 6.9). The 8B cases were read by hand (next point).
+- **8B rows price errors, read by hand (test).** Counting every wrong price of a name-matched item (with or without
+  a qty error): plain 32, rows 36. Rows fixed 21 of plain's errors and made 25 new ones (net +4). The 25 new ones:
+  - **13: a row-grouping slip.** On a slightly tilted photo each price sits a little lower than its name, so it
+    joins the next item's row and every item gets its neighbour's price. Almost all from 3 receipts (`test_0085`
+    alone: 10; `test_0098`, `test_0045`). Plain text did not mislead 8B here; the wrong rows look certain.
+  - 6: the 1000x format problem (section 6.9), e.g. `22.000` -> 22.
+  - 5: OCR misread the price (`25,,00`, `20,00` on `test_0014`); 1 other.
+
+  Example, `test_0085` as Method A wrote it (`Ayam Pop` should be 40.000, `Samabal SP` 11.000):
+  ```
+   2 Ayam Pop         7.000
+   1 Samabal SP      40.000
+                     11.000
+   1 Sambal Gabus Asin Cb
+  ```
+  On validation and train rows **lower** 8B's wrong prices (validation 28 -> 20, train 46 -> 27;
+  `eval/thousands_check.py`), so the test rise is a few tilted receipts, the same weak spot as rotated photos, not a
+  general effect of rows. A tilt-aware row rule might fix it (TODO.md).
 - **Speed and tokens:** unchanged (rows: 284 input tokens per test receipt at every size, plain 273).
 
 ### 6.8 Method B: rows plus x positions (2B only)
@@ -486,7 +504,8 @@ Causes:
 7. **CORD only**: Indonesian receipts in one format family; results may not transfer to other countries or layouts.
 8. **Plain OCR+LLM uses naive text formatting** (one box per line). Method A shows this costs 8 to 16 points on test
    totals across 2B, 4B and 8B. The row rule was set by eye, not tuned, and fails on rotated photos; a better layout
-   might close more of the gap. Method B (x positions) was tried on 2B only.
+   might close more of the gap. On tilted photos the rule can shift every price by one row (section 6.7).
+   Method B (x positions) was tried on 2B only.
 9. **Quantity errors are real, not a labelling artefact.** CORD labels a quantity only when one is printed: each of the 767 quantity labels (validation, test, train)
    matches a printed quantity word in CORD's own word annotations.
    (An earlier version of this report said CORD labels quantity 1 when none is printed; that was wrong.)
