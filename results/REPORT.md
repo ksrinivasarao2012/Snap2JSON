@@ -101,8 +101,9 @@ Going 2B -> 4B gives a small gain; 4B -> 8B gives the larger one.
 For OCR+LLM the pattern is **not monotonic**: on test, 4B has lower total accuracy than 2B (0.558 vs 0.600) but higher
 item F1 (0.607 vs 0.436). With rows (Method A) the same pattern remains: 4B total is below 2B on every split (test
 0.716 vs 0.737, validation 0.653 vs 0.816), while 4B item F1 is higher (test 0.600 vs 0.495). So it is not only the
-text layout. I have not found the cause yet (it may be how each model reads text-only input, or noise), so this
-should not be read as a real effect of size.
+text layout. **The main cause is a number-format habit of 4B (section 6.9):** it often copies Indonesian amounts
+like `60.000` into the JSON as a number, which JSON reads as 60, so the total is 1000x too small. So this is not a
+real effect of size on reading the receipt.
 
 Sample sizes are small (test: 95 totals, 65 subtotals, 41 taxes), so a difference of a few points on a single split,
 especially for tax, is within noise. The image-vs-text gaps above are far larger than that.
@@ -342,6 +343,36 @@ model sees column positions as numbers instead of spaces. Everything else is as 
 - **Cost:** 414 input tokens per test receipt (A 284, +46%), about 0.1 s slower end to end.
 - **Decision:** B was not run on 4B or 8B (the rule set before the run: only if B beats A on 2B).
 
+### 6.9 Why 4B is below 2B on text totals: amounts written 1000x too small
+
+Indonesian receipts use a dot as the thousands separator (`60.000` = 60,000 rupiah). The prompt asks for plain
+numbers ("16500, not 16,500"), but 4B often writes `"total": 60.000`. In JSON that is the number 60, so the score
+counts it as wrong. Sometimes it also drops the zeros (`535.5` for 535,500). Script: `eval/thousands_check.py`
+(read only; it changes no score).
+
+| Test, total | Total acc | Wrong totals | of which exactly true / 1000 |
+|---|---|---|---|
+| 2B rows | 0.737 | 25 | 2 |
+| **4B plain** | 0.558 | 42 | **16** |
+| **4B rows** | 0.716 | 27 | **19** |
+| 4B VLM | 0.895 | 10 | 7 |
+| 8B plain | 0.811 | 18 | 1 |
+| 8B rows | 0.895 | 10 | 5 |
+
+- **This explains most of the 4B < 2B gap.** On test, 19 of 4B rows' 27 wrong totals are exactly 1000x too small;
+  on validation 23 of 34. 2B and 8B rarely do it; their wrong totals are mostly another printed amount (e.g. cash
+  paid, section 7.2). The same holds on train and degraded.
+- **It also hits item prices:** of 4B's wrong item prices on test, 28 of 55 (rows) and 29 of 55 (plain) are 1000x too
+  small. It explains a few of 8B's extra price errors with rows too (6 of 36).
+- **The 4B VLM does it as well** (7 of 10 wrong test totals), but less often, so it shows mainly in the text methods.
+- **The scores are not changed.** A parsing rule cannot fix this safely: `60.000` (3 digits after the dot) is almost
+  always thousands, but `535.5` or `26.25` could be either, and a size rule ("under 1000 means thousands") would break
+  7 real ground-truth amounts under 1000 (e.g. a tax of 727). Choosing such a rule after seeing the results would also
+  fit the scorer to the data. A fair fix is a separate experiment: ask for amounts as strings exactly as printed and
+  convert them with the same `parse_amount` rule as the ground truth (TODO.md).
+- So the 4B text numbers measure "reading the receipt **and** writing the number in the right format". The format
+  part is a real failure of the system as built, so it stays in the score.
+
 ## 7. All results
 
 Total acc / Item F1. "OCR+LLM" is the plain format; "OCR+LLM rows" is Method A. JSON-valid rate was 1.00 everywhere except:
@@ -464,7 +495,8 @@ Causes:
 
 ## 9. Suggested next steps
 
-1. Find out why 4B is below 2B on totals with text input (plain and rows): read a sample of 4B validation errors.
+1. Optional output-format experiment (section 6.9): amounts as printed strings, converted by `parse_amount`;
+   validation first, then test once, all methods; reported next to the main result.
 2. Catch more lone quantity digits in OCR (e.g. a larger text detector), compared on validation only. Lower
    detection thresholds, a larger box margin and 1.5x upscaling were tried on validation and did not fix it.
 3. Run the Gemini pair on a few receipts per day (cache makes reruns free) and add it to the same tables.

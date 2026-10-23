@@ -220,7 +220,7 @@ Plain OCR text showed fewer quantity errors only because many of those items wer
 
 1. ~~Run Method B on 2B~~ and ~~A on 4B and 8B~~: done 2026-10-23, section 9.
 2. **Catch more lone quantity digits in OCR** (e.g. a larger text detector), compared on validation only.
-3. Read the 4B and 8B rows price errors (section 9.2) and the 4B < 2B total errors.
+3. Read the 8B rows price errors (section 9.2). The 4B < 2B cause is found (REPORT.md 6.9).
 
 ## 9. Update 2026-10-23: Method A on 4B and 8B, Method B on 2B
 
@@ -239,8 +239,9 @@ All splits, same prompt and scoring. Runs: `results/runs/ocr_llm_rows__Qwen_Qwen
   2B 67 / 20, 4B 57 / 13, 8B 50 / 25. About half of the test total gap to the VLM is closed at every size.
 - **Subtotal and tax too** (test: 4B +18 / +12 pts, 8B +11 / +17).
 - **Items: no on test** (-0.7 and -1.6 pts, within noise); on validation and train rows add +5 to +9 pts at 4B and 8B.
-- **The 4B < 2B oddity stays:** 4B rows total is below 2B rows on every split (validation 0.653 vs 0.816). Not
-  explained yet.
+- **The 4B < 2B oddity stays:** 4B rows total is below 2B rows on every split (validation 0.653 vs 0.816). Cause
+  found later the same day (`results/REPORT.md` 6.9): 4B often writes `60.000`, which JSON reads as 60; 19 of its
+  27 wrong test totals are exactly 1000x too small.
 - **Rotate is still the weak spot:** rows lose against plain on rotated photos at every size (2B 10 -> 8, 4B 6 -> 4,
   8B 12 -> 9 of 22).
 
@@ -258,7 +259,8 @@ Same first-match diagnostic as section 4 (test, 251 items):
 
 - **Yes, quantity invention is a 2B problem.** 4B and 8B rarely make up a quantity from price digits.
 - **But they get more prices wrong with rows** than with plain text (4B 44 -> 50, 8B 23 -> 35), so matched items do not
-  rise. Not read by hand yet; a likely cause is rows with several numbers (qty, unit price, line total).
+  rise. For 4B about half of its wrong prices are 1000x too small (REPORT.md 6.9); for 8B rows only 6 of 36 are, so
+  the rest is not read by hand yet (a guess: rows with several numbers, such as qty, unit price and line total).
 
 ### 9.3 Method B: rows + x positions (2B)
 

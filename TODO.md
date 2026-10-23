@@ -4,7 +4,7 @@ Last updated: 2026-10-23. Results so far: `results/REPORT.md`. Session record: `
 
 ## Priority order
 
-1. **Why 4B < 2B on text totals, and why rows raise price errors at 4B/8B:** read errors on validation (no GPU).
+1. **Why rows raise price errors at 8B:** read errors on validation (no GPU). (4B < 2B: found, REPORT.md 6.9.)
 2. **Gemini pair** (laptop): start early, because the free-tier daily limits spread it over several days.
 3. **`cost.py`:** cost per receipt is a required metric and still missing.
 4. *Optional:* **prompt-fix experiment** (section 1), as a separate experiment next to the untuned main result.
@@ -28,6 +28,7 @@ Lower priority: larger OCR detector, sub-item extraction (Option 2), LoRA.
 - [x] Method B (rows + x positions) on 2B, all splits: worse than A (REPORT.md 6.8)
 - [x] Method A on 4B and 8B, all splits: totals up at every size, test item F1 not (REPORT.md 6.7)
 - [x] Compared A vs B vs plain; REPORT.md and the Method A report (section 9) updated
+- [x] Why 4B < 2B on text totals: it writes `60.000`, read by JSON as 60 (REPORT.md 6.9, `eval/thousands_check.py`)
 
 ## 1) Needs the lab GPU
 
@@ -36,6 +37,13 @@ Lower priority: larger OCR detector, sub-item extraction (Option 2), LoRA.
       as total (7), names printed over two lines cut short or split (13). Add a few prompt rules (e.g. "total is the
       amount due, not cash paid"; "tax is the PB1 / TAX line, not service"). Tune on **validation only**, then run
       test once, for both methods with the same prompt. Report it next to the untuned main result, not instead of it.
+- [ ] *Optional:* **Output-format experiment** (REPORT.md 6.9), its own experiment. 4B often writes amounts like
+      `60.000` (read by JSON as 60) or `535.5` (for 535,500). Change the prompt and schema so the model copies each
+      amount **as a string, exactly as printed** (`"total": "60.000"`), and convert it with `parse_amount`, the same
+      rule used for the ground truth. Do NOT fix it with a parsing rule on numbers (`535.5` is ambiguous; 7 real
+      amounts are under 1000). Check on **validation only**, then run test once, every method and model (a few hours
+      GPU). Report next to the untuned main result. Can be combined with the prompt-fix experiment, but then report
+      which change did what.
 - [ ] **Sub-item extraction (Option 2)**, its own experiment: add sub-items (modifiers, CORD `menu.sub`) to the prompt
       and schema, check the prompt on validation, then re-run every method and model (about 4 h GPU for Qwen;
       Gemini too). Until then sub-items are ignored in scoring (Option 1, done 2026-10-23).
@@ -46,8 +54,7 @@ Lower priority: larger OCR detector, sub-item extraction (Option 2), LoRA.
 ## 2) No GPU needed (laptop is fine)
 
 ### Experiment
-- [ ] Look at why 4B < 2B on OCR+LLM totals (rows do not fix it: 4B rows below 2B rows on every split)
-- [ ] Read the 4B/8B rows price errors (8B test: 23 -> 35 with rows; REPORT.md 6.7)
+- [ ] Read the 8B rows price errors (8B test: 23 -> 35 with rows; only 6 of 36 are 1000x too small; REPORT.md 6.7)
 - [ ] **Gemini pair:**
   - set `GEMINI_MODEL` in `.env` and check the free-tier limits in AI Studio
   - run a few receipts per day (the cache makes reruns free)
